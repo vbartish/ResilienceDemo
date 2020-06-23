@@ -25,7 +25,7 @@ namespace ResilienceDemo.DivisionControl
                 with => with
                     .Latency(TimeSpan.FromMilliseconds(2000))
                     .InjectionRate(1)
-                    .EnabledWhen((_, __) => Task.FromResult(_registerUnitCounter++ % RegisterUnitSuccessEvery != 0)));
+                    .EnabledWhen((_, __) => Task.FromResult(++_registerUnitCounter % RegisterUnitSuccessEvery != 0)));
             return latencyPolicy.ExecuteAsync(() => Task.FromResult(new RegisterArtilleryUnitResponse
             {
                 Message = "all good"

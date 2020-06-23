@@ -17,6 +17,7 @@
       <PackageReference Include="CommandDotNet.IoC.Autofac" Version="3.0.0" />
       <PackageReference Include="Microsoft.Extensions.Hosting" Version="3.1.5" />
       <PackageReference Include="Polly" Version="7.1.0" />
+      <PackageReference Include="Polly.Contrib.WaitAndRetry" Version="1.1.1" />
     </ItemGroup>
 
 </Project>
