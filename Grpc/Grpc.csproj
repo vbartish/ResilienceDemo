@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.1</TargetFramework>
+        <RootNamespace>GrpcContract</RootNamespace>
+    </PropertyGroup>
+    <ItemGroup>
+        <Protobuf Include="../**/*.proto" OutputDir="%(RelativeDir)" CompileOutputs="true" />
+    </ItemGroup>
+    <ItemGroup>
+      <PackageReference Include="Autofac" Version="5.2.0" />
+      <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="6.0.0" />
+      <PackageReference Include="Google.Protobuf" Version="3.12.3" />
+      <PackageReference Include="Grpc.Core" Version="2.29.0" />
+      <PackageReference Include="Grpc.Reflection" Version="2.29.0" />
+      <PackageReference Include="Grpc.Tools" Version="2.29.0" />
+      <PackageReference Include="Microsoft.Extensions.Hosting" Version="3.1.5" />
+      <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="3.1.5" />
+    </ItemGroup>
+    <ItemGroup>
+      <Reference Include="Autofac, Version=5.2.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da">
+        <HintPath>..\..\..\..\..\.nuget\packages\autofac\5.2.0\lib\netstandard2.1\Autofac.dll</HintPath>
+      </Reference>
+    </ItemGroup>
+
+    <Target Name="Protobuf_Clean" Condition=" '@(Protobuf)' != '' " />
+</Project>

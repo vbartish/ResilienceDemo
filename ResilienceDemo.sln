@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Battery", "Battery\Battery.csproj", "{9527CC79-CA37-4E2C-8F82-268DD55B1B36}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DivisionControl", "DivisionControl\DivisionControl.csproj", "{9D150349-8D87-4EFF-9FC5-0E3DDA5B106F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Grpc", "Grpc\Grpc.csproj", "{C1659EA3-041E-4AE1-A10A-38B9BCEDFE0C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9527CC79-CA37-4E2C-8F82-268DD55B1B36}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9527CC79-CA37-4E2C-8F82-268DD55B1B36}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9527CC79-CA37-4E2C-8F82-268DD55B1B36}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9527CC79-CA37-4E2C-8F82-268DD55B1B36}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9D150349-8D87-4EFF-9FC5-0E3DDA5B106F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9D150349-8D87-4EFF-9FC5-0E3DDA5B106F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9D150349-8D87-4EFF-9FC5-0E3DDA5B106F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9D150349-8D87-4EFF-9FC5-0E3DDA5B106F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C1659EA3-041E-4AE1-A10A-38B9BCEDFE0C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C1659EA3-041E-4AE1-A10A-38B9BCEDFE0C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C1659EA3-041E-4AE1-A10A-38B9BCEDFE0C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C1659EA3-041E-4AE1-A10A-38B9BCEDFE0C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

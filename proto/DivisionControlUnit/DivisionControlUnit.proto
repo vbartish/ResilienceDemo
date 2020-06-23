@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+option csharp_namespace = "GrpcDivisionControlUnit";
+
+package GrpcDivisionControlUnit;
+
+service DivisionControlUnit {
+  rpc RegisterUnit (RegisterArtilleryUnitRequest) returns (RegisterArtilleryUnitResponse);
+}
+
+message RegisterArtilleryUnitRequest {
+  string unit_id = 1;
+  int32 longitude = 2; 
+  int32 latitude = 3;
+}
+
+message RegisterArtilleryUnitResponse {
+  string message = 1;
+}
