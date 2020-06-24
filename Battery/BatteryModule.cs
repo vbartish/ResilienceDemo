@@ -1,6 +1,10 @@
 ﻿using Autofac;
 using CommandDotNet.Rendering;
 using GrpcContract;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Options;
+using Polly.Caching;
+using Polly.Caching.Memory;
 using DivisionControlUnitClient = GrpcDivisionControlUnit.DivisionControlUnit.DivisionControlUnitClient;
     
 namespace ResilienceDemo.Battery
@@ -10,12 +14,23 @@ namespace ResilienceDemo.Battery
         protected override void Load(ContainerBuilder builder)
         {
             builder.RegisterType<SystemConsole>().As<IConsole>().InstancePerLifetimeScope();
-            builder.RegisterType<Battery>().AsSelf().SingleInstance();
+            builder.RegisterType<Battery>().As<IBattery>().SingleInstance();
+            builder.RegisterType<SeniorBatteryOfficer>().AsSelf().SingleInstance();
+
+            builder.RegisterType<OptionsManager<MemoryCacheOptions>>().As<IOptions<MemoryCacheOptions>>().SingleInstance();
+            builder.RegisterType<OptionsManager<MemoryCacheOptions>>().As<IOptionsSnapshot<MemoryCacheOptions>>().InstancePerLifetimeScope();
+            builder.RegisterType<OptionsMonitor<MemoryCacheOptions>>().As<IOptionsMonitor<MemoryCacheOptions>>().SingleInstance();
+            builder.RegisterType<OptionsFactory<MemoryCacheOptions>>().As<IOptionsFactory<MemoryCacheOptions>>().InstancePerDependency();
+            builder.RegisterType<OptionsCache<MemoryCacheOptions>>().As<IOptionsMonitorCache<MemoryCacheOptions>>().SingleInstance();
+            builder.RegisterType<MemoryCache>().As<IMemoryCache>().SingleInstance();
+            builder.RegisterType<MemoryCacheProvider>().As<IAsyncCacheProvider>().SingleInstance();
+            
             builder.AddGrpcClient(
                 "localhost", 
                 50050,
                 channel => new DivisionControlUnitClient(channel));
             builder.AddDefaultPolicies();
+
         }
     }
 }

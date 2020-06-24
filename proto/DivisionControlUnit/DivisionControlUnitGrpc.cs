@@ -13,14 +13,23 @@ namespace GrpcDivisionControlUnit {
     static readonly string __ServiceName = "GrpcDivisionControlUnit.DivisionControlUnit";
 
     static readonly grpc::Marshaller<global::GrpcDivisionControlUnit.RegisterArtilleryUnitRequest> __Marshaller_GrpcDivisionControlUnit_RegisterArtilleryUnitRequest = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::GrpcDivisionControlUnit.RegisterArtilleryUnitRequest.Parser.ParseFrom);
-    static readonly grpc::Marshaller<global::GrpcDivisionControlUnit.RegisterArtilleryUnitResponse> __Marshaller_GrpcDivisionControlUnit_RegisterArtilleryUnitResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::GrpcDivisionControlUnit.RegisterArtilleryUnitResponse.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::GrpcDivisionControlUnit.RePositionCommand> __Marshaller_GrpcDivisionControlUnit_RePositionCommand = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::GrpcDivisionControlUnit.RePositionCommand.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::GrpcDivisionControlUnit.GetMeteoRequest> __Marshaller_GrpcDivisionControlUnit_GetMeteoRequest = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::GrpcDivisionControlUnit.GetMeteoRequest.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::GrpcDivisionControlUnit.Meteo> __Marshaller_GrpcDivisionControlUnit_Meteo = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::GrpcDivisionControlUnit.Meteo.Parser.ParseFrom);
 
-    static readonly grpc::Method<global::GrpcDivisionControlUnit.RegisterArtilleryUnitRequest, global::GrpcDivisionControlUnit.RegisterArtilleryUnitResponse> __Method_RegisterUnit = new grpc::Method<global::GrpcDivisionControlUnit.RegisterArtilleryUnitRequest, global::GrpcDivisionControlUnit.RegisterArtilleryUnitResponse>(
+    static readonly grpc::Method<global::GrpcDivisionControlUnit.RegisterArtilleryUnitRequest, global::GrpcDivisionControlUnit.RePositionCommand> __Method_RegisterUnit = new grpc::Method<global::GrpcDivisionControlUnit.RegisterArtilleryUnitRequest, global::GrpcDivisionControlUnit.RePositionCommand>(
         grpc::MethodType.Unary,
         __ServiceName,
         "RegisterUnit",
         __Marshaller_GrpcDivisionControlUnit_RegisterArtilleryUnitRequest,
-        __Marshaller_GrpcDivisionControlUnit_RegisterArtilleryUnitResponse);
+        __Marshaller_GrpcDivisionControlUnit_RePositionCommand);
+
+    static readonly grpc::Method<global::GrpcDivisionControlUnit.GetMeteoRequest, global::GrpcDivisionControlUnit.Meteo> __Method_GetMeteo = new grpc::Method<global::GrpcDivisionControlUnit.GetMeteoRequest, global::GrpcDivisionControlUnit.Meteo>(
+        grpc::MethodType.Unary,
+        __ServiceName,
+        "GetMeteo",
+        __Marshaller_GrpcDivisionControlUnit_GetMeteoRequest,
+        __Marshaller_GrpcDivisionControlUnit_Meteo);
 
     /// <summary>Service descriptor</summary>
     public static global::Google.Protobuf.Reflection.ServiceDescriptor Descriptor
@@ -32,7 +41,12 @@ namespace GrpcDivisionControlUnit {
     [grpc::BindServiceMethod(typeof(DivisionControlUnit), "BindService")]
     public abstract partial class DivisionControlUnitBase
     {
-      public virtual global::System.Threading.Tasks.Task<global::GrpcDivisionControlUnit.RegisterArtilleryUnitResponse> RegisterUnit(global::GrpcDivisionControlUnit.RegisterArtilleryUnitRequest request, grpc::ServerCallContext context)
+      public virtual global::System.Threading.Tasks.Task<global::GrpcDivisionControlUnit.RePositionCommand> RegisterUnit(global::GrpcDivisionControlUnit.RegisterArtilleryUnitRequest request, grpc::ServerCallContext context)
+      {
+        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
+      }
+
+      public virtual global::System.Threading.Tasks.Task<global::GrpcDivisionControlUnit.Meteo> GetMeteo(global::GrpcDivisionControlUnit.GetMeteoRequest request, grpc::ServerCallContext context)
       {
         throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
       }
@@ -62,21 +76,37 @@ namespace GrpcDivisionControlUnit {
       {
       }
 
-      public virtual global::GrpcDivisionControlUnit.RegisterArtilleryUnitResponse RegisterUnit(global::GrpcDivisionControlUnit.RegisterArtilleryUnitRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      public virtual global::GrpcDivisionControlUnit.RePositionCommand RegisterUnit(global::GrpcDivisionControlUnit.RegisterArtilleryUnitRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
       {
         return RegisterUnit(request, new grpc::CallOptions(headers, deadline, cancellationToken));
       }
-      public virtual global::GrpcDivisionControlUnit.RegisterArtilleryUnitResponse RegisterUnit(global::GrpcDivisionControlUnit.RegisterArtilleryUnitRequest request, grpc::CallOptions options)
+      public virtual global::GrpcDivisionControlUnit.RePositionCommand RegisterUnit(global::GrpcDivisionControlUnit.RegisterArtilleryUnitRequest request, grpc::CallOptions options)
       {
         return CallInvoker.BlockingUnaryCall(__Method_RegisterUnit, null, options, request);
       }
-      public virtual grpc::AsyncUnaryCall<global::GrpcDivisionControlUnit.RegisterArtilleryUnitResponse> RegisterUnitAsync(global::GrpcDivisionControlUnit.RegisterArtilleryUnitRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      public virtual grpc::AsyncUnaryCall<global::GrpcDivisionControlUnit.RePositionCommand> RegisterUnitAsync(global::GrpcDivisionControlUnit.RegisterArtilleryUnitRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
       {
         return RegisterUnitAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
       }
-      public virtual grpc::AsyncUnaryCall<global::GrpcDivisionControlUnit.RegisterArtilleryUnitResponse> RegisterUnitAsync(global::GrpcDivisionControlUnit.RegisterArtilleryUnitRequest request, grpc::CallOptions options)
+      public virtual grpc::AsyncUnaryCall<global::GrpcDivisionControlUnit.RePositionCommand> RegisterUnitAsync(global::GrpcDivisionControlUnit.RegisterArtilleryUnitRequest request, grpc::CallOptions options)
       {
         return CallInvoker.AsyncUnaryCall(__Method_RegisterUnit, null, options, request);
+      }
+      public virtual global::GrpcDivisionControlUnit.Meteo GetMeteo(global::GrpcDivisionControlUnit.GetMeteoRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return GetMeteo(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual global::GrpcDivisionControlUnit.Meteo GetMeteo(global::GrpcDivisionControlUnit.GetMeteoRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.BlockingUnaryCall(__Method_GetMeteo, null, options, request);
+      }
+      public virtual grpc::AsyncUnaryCall<global::GrpcDivisionControlUnit.Meteo> GetMeteoAsync(global::GrpcDivisionControlUnit.GetMeteoRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return GetMeteoAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual grpc::AsyncUnaryCall<global::GrpcDivisionControlUnit.Meteo> GetMeteoAsync(global::GrpcDivisionControlUnit.GetMeteoRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.AsyncUnaryCall(__Method_GetMeteo, null, options, request);
       }
       /// <summary>Creates a new instance of client from given <c>ClientBaseConfiguration</c>.</summary>
       protected override DivisionControlUnitClient NewInstance(ClientBaseConfiguration configuration)
@@ -90,7 +120,8 @@ namespace GrpcDivisionControlUnit {
     public static grpc::ServerServiceDefinition BindService(DivisionControlUnitBase serviceImpl)
     {
       return grpc::ServerServiceDefinition.CreateBuilder()
-          .AddMethod(__Method_RegisterUnit, serviceImpl.RegisterUnit).Build();
+          .AddMethod(__Method_RegisterUnit, serviceImpl.RegisterUnit)
+          .AddMethod(__Method_GetMeteo, serviceImpl.GetMeteo).Build();
     }
 
     /// <summary>Register service method with a service binder with or without implementation. Useful when customizing the  service binding logic.
@@ -99,7 +130,8 @@ namespace GrpcDivisionControlUnit {
     /// <param name="serviceImpl">An object implementing the server-side handling logic.</param>
     public static void BindService(grpc::ServiceBinderBase serviceBinder, DivisionControlUnitBase serviceImpl)
     {
-      serviceBinder.AddMethod(__Method_RegisterUnit, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::GrpcDivisionControlUnit.RegisterArtilleryUnitRequest, global::GrpcDivisionControlUnit.RegisterArtilleryUnitResponse>(serviceImpl.RegisterUnit));
+      serviceBinder.AddMethod(__Method_RegisterUnit, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::GrpcDivisionControlUnit.RegisterArtilleryUnitRequest, global::GrpcDivisionControlUnit.RePositionCommand>(serviceImpl.RegisterUnit));
+      serviceBinder.AddMethod(__Method_GetMeteo, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::GrpcDivisionControlUnit.GetMeteoRequest, global::GrpcDivisionControlUnit.Meteo>(serviceImpl.GetMeteo));
     }
 
   }

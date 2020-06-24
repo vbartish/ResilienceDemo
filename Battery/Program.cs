@@ -20,7 +20,7 @@ namespace ResilienceDemo.Battery
             {
                 var argsLine = Console.ReadLine();
                 if (argsLine != null)
-                    await new AppRunner<Battery>()
+                    await new AppRunner<SeniorBatteryOfficer>()
                         .UseDefaultMiddleware()
                         .UseAutofac(container)
                         .RunAsync(argsLine.Split(' '));

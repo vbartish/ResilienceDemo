@@ -5,15 +5,31 @@ option csharp_namespace = "GrpcDivisionControlUnit";
 package GrpcDivisionControlUnit;
 
 service DivisionControlUnit {
-  rpc RegisterUnit (RegisterArtilleryUnitRequest) returns (RegisterArtilleryUnitResponse);
+  rpc RegisterUnit (RegisterArtilleryUnitRequest) returns (RePositionCommand);
+  
+  rpc GetMeteo (GetMeteoRequest) returns (Meteo);
 }
 
 message RegisterArtilleryUnitRequest {
   string unit_id = 1;
-  int32 longitude = 2; 
-  int32 latitude = 3;
+  double longitude = 2; 
+  double latitude = 3;
 }
 
-message RegisterArtilleryUnitResponse {
-  string message = 1;
+message RePositionCommand {
+  double longitude = 1; 
+  double latitude = 2;
+  double main_firing_direction = 3; 
+}
+
+message GetMeteoRequest {
+  double longitude = 1; 
+  double latitude = 2;
+}
+
+message Meteo {
+  double temperature = 1;
+  double wind_angle = 2;
+  double wind_speed = 3;
+  double humidity = 4;
 }

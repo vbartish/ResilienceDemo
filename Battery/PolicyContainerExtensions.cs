@@ -1,10 +1,13 @@
 ﻿using System;
+using System.Runtime.InteropServices.ComTypes;
 using System.Threading.Tasks;
 using Autofac;
 using CommandDotNet;
 using CommandDotNet.Rendering;
 using Grpc.Core;
+using GrpcDivisionControlUnit;
 using Polly;
+using Polly.Caching;
 using Polly.Contrib.WaitAndRetry;
 using Polly.Registry;
 
@@ -28,37 +31,53 @@ namespace ResilienceDemo.Battery
             var policyRegistry = new PolicyRegistry
             {
                 {
-                    PolicyKey.BasicRetryOnRpc.ToString(), Policy
+                    RetryPolicyKey.BasicRetryOnRpc.ToString(), Policy
                         .Handle<RpcException>()
                         .RetryAsync(MaxRetries, (exception, retryAttempt, context) =>
                         {
-                            console.Out.WriteLine($"Attempt {retryAttempt - 1} failed: {exception.Message}. Retrying.");
+                            console.Out.WriteLine($"Operation: {context.OperationKey}; Attempt {retryAttempt - 1} failed: {exception.Message}. Retrying.");
                             return Task.CompletedTask;
                         })
                 },
                 {
-                    PolicyKey.RetryOnRpcWithExponentialBackoff.ToString(), Policy
+                    RetryPolicyKey.RetryOnRpcWithExponentialBackoff.ToString(), Policy
                         .Handle<RpcException>()
                         .WaitAndRetryAsync(Backoff.ExponentialBackoff(
                             TimeSpan.FromMilliseconds(100),
                             MaxRetries), (exception, timeSpan, retryAttempt, context) =>
                         {
                             console.Out.WriteLine(
-                                $"TimeSpan: {timeSpan.ToString()}. Attempt {retryAttempt - 1} failed: {exception.Message}. Retrying.");
+                                $"Operation: {context.OperationKey}; TimeSpan: {timeSpan.ToString()}. Attempt {retryAttempt - 1} failed: {exception.Message}. Retrying.");
                             return Task.CompletedTask;
                         })
                 },
                 {
-                    PolicyKey.RetryOnRpcWithJitter.ToString(), Policy
+                    RetryPolicyKey.RetryOnRpcWithJitter.ToString(), Policy
                         .Handle<RpcException>()
                         .WaitAndRetryAsync(Backoff.DecorrelatedJitterBackoffV2(
-                            TimeSpan.FromMilliseconds(100),
+                            TimeSpan.FromMilliseconds(50),
                             MaxRetries), (exception, timeSpan, retryAttempt, context) =>
                         {
                             console.Out.WriteLine(
-                                $"TimeSpan: {timeSpan.ToString()}. Attempt {retryAttempt - 1} failed: {exception.Message}. Retrying.");
+                                $"Operation: {context.OperationKey}; TimeSpan: {timeSpan.ToString()}. Attempt {retryAttempt - 1} failed: {exception.Message}. Retrying.");
                             return Task.CompletedTask;
                         })
+                },
+                {
+                    CachePolicyKey.InMemoryCache.ToString(),
+                    Policy.CacheAsync(
+                        componentContext.Resolve<IAsyncCacheProvider>(),
+                        TimeSpan.FromMinutes(5),
+                        (policyContext, cacheKey) => console.WriteLine($"Operation {policyContext.OperationKey}: Cache get {cacheKey}"),
+                        (policyContext, cacheKey) => console.WriteLine($"Operation {policyContext.OperationKey}: Cache miss {cacheKey}"),
+                        (policyContext, cacheKey) => console.WriteLine($"Operation {policyContext.OperationKey}: Cache put {cacheKey}"),
+                        (policyContext, cacheKey, exception) => console.WriteLine($"Operation {policyContext.OperationKey}: Cache get error {cacheKey}; {exception}"),
+                        (policyContext, cacheKey, exception) => console.WriteLine($"Operation {policyContext.OperationKey}: Cache put error {cacheKey}; {exception}"))
+                }
+                ,
+                {
+                    CachePolicyKey.NoOp.ToString(),
+                    Policy.NoOpAsync<Meteo>()
                 }
             };
             
