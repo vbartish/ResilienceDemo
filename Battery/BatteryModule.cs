@@ -1,4 +1,5 @@
-﻿using Autofac;
+﻿using System.Collections.Generic;
+using Autofac;
 using CommandDotNet.Rendering;
 using GrpcContract;
 using Microsoft.Extensions.Caching.Memory;
@@ -15,6 +16,17 @@ namespace ResilienceDemo.Battery
         {
             builder.RegisterType<SystemConsole>().As<IConsole>().InstancePerLifetimeScope();
             builder.RegisterType<Battery>().As<IBattery>().SingleInstance();
+            builder.Register(context =>
+            {
+                var console = context.Resolve<IConsole>();
+                var result = new List<IHowitzer>();
+                for (var howitzerId = 0; howitzerId < 6; howitzerId++)
+                {
+                    var howitzer = new Howitzer(howitzerId, console);
+                    result.Add(howitzer);
+                }
+                return result;
+            }).As<List<IHowitzer>>().SingleInstance();
             builder.RegisterType<SeniorBatteryOfficer>().AsSelf().SingleInstance();
 
             builder.RegisterType<OptionsManager<MemoryCacheOptions>>().As<IOptions<MemoryCacheOptions>>().SingleInstance();

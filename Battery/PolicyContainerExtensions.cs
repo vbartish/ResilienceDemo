@@ -8,6 +8,7 @@ using Polly;
 using Polly.Caching;
 using Polly.Contrib.WaitAndRetry;
 using Polly.Registry;
+using Polly.Timeout;
 
 namespace ResilienceDemo.Battery
 {
@@ -33,7 +34,8 @@ namespace ResilienceDemo.Battery
                     Policy.NoOpAsync()
                 },
                 {
-                    RetryPolicyKey.BasicRetryOnRpc.ToString(), Policy
+                    RetryPolicyKey.BasicRetryOnRpc.ToString(),
+                    Policy
                         .Handle<RpcException>()
                         .RetryAsync(MaxRetries, (exception, retryAttempt, context) =>
                         {
@@ -42,7 +44,8 @@ namespace ResilienceDemo.Battery
                         })
                 },
                 {
-                    RetryPolicyKey.RetryOnRpcWithExponentialBackoff.ToString(), Policy
+                    RetryPolicyKey.RetryOnRpcWithExponentialBackoff.ToString(),
+                    Policy
                         .Handle<RpcException>()
                         .WaitAndRetryAsync(Backoff.ExponentialBackoff(
                             TimeSpan.FromMilliseconds(100),
@@ -54,7 +57,8 @@ namespace ResilienceDemo.Battery
                         })
                 },
                 {
-                    RetryPolicyKey.RetryOnRpcWithJitter.ToString(), Policy
+                    RetryPolicyKey.RetryOnRpcWithJitter.ToString(),
+                    Policy
                         .Handle<RpcException>()
                         .WaitAndRetryAsync(Backoff.DecorrelatedJitterBackoffV2(
                             TimeSpan.FromMilliseconds(50),
@@ -67,7 +71,8 @@ namespace ResilienceDemo.Battery
                 },
                 {
                     CachePolicyKey.InMemoryCache.ToString(),
-                    Policy.CacheAsync(
+                    Policy
+                        .CacheAsync(
                         componentContext.Resolve<IAsyncCacheProvider>(),
                         TimeSpan.FromMinutes(5),
                         (policyContext, cacheKey) => console.WriteLine($"Operation {policyContext.OperationKey}: Cache get {cacheKey}"),
@@ -75,11 +80,48 @@ namespace ResilienceDemo.Battery
                         (policyContext, cacheKey) => console.WriteLine($"Operation {policyContext.OperationKey}: Cache put {cacheKey}"),
                         (policyContext, cacheKey, exception) => console.WriteLine($"Operation {policyContext.OperationKey}: Cache get error {cacheKey}; {exception}"),
                         (policyContext, cacheKey, exception) => console.WriteLine($"Operation {policyContext.OperationKey}: Cache put error {cacheKey}; {exception}"))
-                }
-                ,
+                },
                 {
                     CachePolicyKey.NoCache.ToString(),
                     Policy.NoOpAsync()
+                },
+                {
+                    TimeoutPolicyKey.NoTimeout.ToString(),
+                    Policy.NoOpAsync()
+                },
+                {
+                    TimeoutPolicyKey.DefaultPessimisticTimeout.ToString(),
+                    Policy.TimeoutAsync(TimeSpan.FromMilliseconds(100), TimeoutStrategy.Pessimistic, (context, span, task) =>
+                    {
+                        // do not await, otherwise policy is useless.
+                        task.ContinueWith(t =>
+                        {
+                            // ContinueWith important the abandoned task may still be executing, when the caller times out 
+
+                            if (t.IsFaulted)
+                            {
+                                console.Out.WriteLine(
+                                    $"Operation {context.OperationKey}: execution timed out after {span.TotalSeconds} seconds, eventually terminated with: {t.Exception}.");
+                            }
+                            else if (t.IsCanceled)
+                            {
+                                // (If the executed delegates do not honour cancellation, this IsCanceled branch may never be hit.
+                                // It can be good practice however to include, in case a Policy configured with TimeoutStrategy.Pessimistic
+                                // is used to execute a delegate honouring cancellation.)  
+                                console.Out.WriteLine(
+                                    $"Operation {context.OperationKey}: execution timed out after {span.TotalSeconds} seconds, task cancelled.");
+                            }
+                            else
+                            {
+                                // extra logic (if desired) for tasks which complete, despite the caller having 'walked away' earlier due to timeout.
+                            }
+
+                            // Additionally, clean up any resources ...
+                        });
+                        
+                        console.Out.WriteLine($"Operation {context.OperationKey} timed out.");
+                        return Task.CompletedTask;
+                    })
                 }
             };
             

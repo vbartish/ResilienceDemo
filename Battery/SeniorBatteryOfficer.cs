@@ -34,15 +34,16 @@ namespace ResilienceDemo.Battery
         }
             
         public async Task ToArms(
-            [Option] RetryPolicyKey retryPolicyKey = RetryPolicyKey.BasicRetryOnRpc,
-            [Option] CachePolicyKey cachePolicyKey = CachePolicyKey.InMemoryCache,
+            [Option(ShortName = "r")] RetryPolicyKey retryPolicyKey = RetryPolicyKey.NoRetry,
+            [Option(ShortName = "c")] CachePolicyKey cachePolicyKey = CachePolicyKey.NoCache,
+            [Option(ShortName = "t")] TimeoutPolicyKey timeoutPolicyKey = TimeoutPolicyKey.NoTimeout,
             double? latitude = null, double? longitude = null)
         {
             var retryPolicy = _policyRegistry.Get<IAsyncPolicy>(retryPolicyKey.ToString());
             var cachePolicy = _policyRegistry.Get<IAsyncPolicy>(cachePolicyKey.ToString());
             var meteoPolicy = Policy.WrapAsync(cachePolicy, retryPolicy);
             
-            _battery.ToArms();
+            await _battery.ToArms(timeoutPolicyKey);
             var coords = new Coordinate(latitude ?? DefaultLatitude, longitude ?? DefaultLongitude);
             
             var meteoTask = meteoPolicy.ExecuteAndCaptureAsync(_ => GetMeteo(coords), new Context("Get meteo."));

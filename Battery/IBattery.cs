@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using GrpcDivisionControlUnit;
 using Polly;
 
@@ -8,7 +9,7 @@ namespace ResilienceDemo.Battery
     {
         Guid Id { get; }
 
-        void ToArms();
+        Task ToArms(TimeoutPolicyKey policyKey);
 
         void RePosition(double latitude, double longitude);
         void UseMeteo(Meteo meteo);

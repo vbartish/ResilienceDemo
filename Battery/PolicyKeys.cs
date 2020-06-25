@@ -13,4 +13,10 @@
         NoCache,
         InMemoryCache
     }
+    
+    public enum TimeoutPolicyKey
+    {
+        NoTimeout, 
+        DefaultPessimisticTimeout
+    }
 }
