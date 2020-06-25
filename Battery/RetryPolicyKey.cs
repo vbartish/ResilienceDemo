@@ -2,6 +2,7 @@
 {
     public enum RetryPolicyKey
     {
+        NoRetry,
         BasicRetryOnRpc,
         RetryOnRpcWithExponentialBackoff,
         RetryOnRpcWithJitter
@@ -9,7 +10,7 @@
 
     public enum CachePolicyKey
     {
-        NoOp,
+        NoCache,
         InMemoryCache
     }
 }

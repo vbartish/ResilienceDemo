@@ -1,4 +1,6 @@
 ﻿using System;
+using GrpcDivisionControlUnit;
+using Polly;
 
 namespace ResilienceDemo.Battery
 {
@@ -9,5 +11,6 @@ namespace ResilienceDemo.Battery
         void ToArms();
 
         void RePosition(double latitude, double longitude);
+        void UseMeteo(Meteo meteo);
     }
 }

@@ -25,27 +25,32 @@ namespace GrpcDivisionControlUnit {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
             "ChlEaXZpc2lvbkNvbnRyb2xVbml0LnByb3RvEhdHcnBjRGl2aXNpb25Db250",
-            "cm9sVW5pdCJUChxSZWdpc3RlckFydGlsbGVyeVVuaXRSZXF1ZXN0Eg8KB3Vu",
-            "aXRfaWQYASABKAkSEQoJbG9uZ2l0dWRlGAIgASgBEhAKCGxhdGl0dWRlGAMg",
-            "ASgBIlcKEVJlUG9zaXRpb25Db21tYW5kEhEKCWxvbmdpdHVkZRgBIAEoARIQ",
-            "CghsYXRpdHVkZRgCIAEoARIdChVtYWluX2ZpcmluZ19kaXJlY3Rpb24YAyAB",
-            "KAEiNgoPR2V0TWV0ZW9SZXF1ZXN0EhEKCWxvbmdpdHVkZRgBIAEoARIQCghs",
-            "YXRpdHVkZRgCIAEoASJWCgVNZXRlbxITCgt0ZW1wZXJhdHVyZRgBIAEoARIS",
-            "Cgp3aW5kX2FuZ2xlGAIgASgBEhIKCndpbmRfc3BlZWQYAyABKAESEAoIaHVt",
-            "aWRpdHkYBCABKAEy3gEKE0RpdmlzaW9uQ29udHJvbFVuaXQScQoMUmVnaXN0",
-            "ZXJVbml0EjUuR3JwY0RpdmlzaW9uQ29udHJvbFVuaXQuUmVnaXN0ZXJBcnRp",
-            "bGxlcnlVbml0UmVxdWVzdBoqLkdycGNEaXZpc2lvbkNvbnRyb2xVbml0LlJl",
-            "UG9zaXRpb25Db21tYW5kElQKCEdldE1ldGVvEiguR3JwY0RpdmlzaW9uQ29u",
-            "dHJvbFVuaXQuR2V0TWV0ZW9SZXF1ZXN0Gh4uR3JwY0RpdmlzaW9uQ29udHJv",
-            "bFVuaXQuTWV0ZW9CGqoCF0dycGNEaXZpc2lvbkNvbnRyb2xVbml0YgZwcm90",
-            "bzM="));
+            "cm9sVW5pdCJkChxSZWdpc3RlckFydGlsbGVyeVVuaXRSZXF1ZXN0Eg8KB3Vu",
+            "aXRfaWQYASABKAkSMwoIcG9zaXRpb24YAiABKAsyIS5HcnBjRGl2aXNpb25D",
+            "b250cm9sVW5pdC5Qb3NpdGlvbiJnChFSZVBvc2l0aW9uQ29tbWFuZBIzCghw",
+            "b3NpdGlvbhgBIAEoCzIhLkdycGNEaXZpc2lvbkNvbnRyb2xVbml0LlBvc2l0",
+            "aW9uEh0KFW1haW5fZmlyaW5nX2RpcmVjdGlvbhgCIAEoASJWCgVNZXRlbxIT",
+            "Cgt0ZW1wZXJhdHVyZRgBIAEoARISCgp3aW5kX2FuZ2xlGAIgASgBEhIKCndp",
+            "bmRfc3BlZWQYAyABKAESEAoIaHVtaWRpdHkYBCABKAEiLwoIUG9zaXRpb24S",
+            "EQoJbG9uZ2l0dWRlGAEgASgBEhAKCGxhdGl0dWRlGAIgASgBImIKDkFzc2F1",
+            "bHRDb21tYW5kEjMKCHBvc2l0aW9uGAEgASgLMiEuR3JwY0RpdmlzaW9uQ29u",
+            "dHJvbFVuaXQuUG9zaXRpb24SGwoTZGlyZWN0aW9uX2RldmlhdGlvbhgCIAEo",
+            "ATKxAgoTRGl2aXNpb25Db250cm9sVW5pdBJxCgxSZWdpc3RlclVuaXQSNS5H",
+            "cnBjRGl2aXNpb25Db250cm9sVW5pdC5SZWdpc3RlckFydGlsbGVyeVVuaXRS",
+            "ZXF1ZXN0GiouR3JwY0RpdmlzaW9uQ29udHJvbFVuaXQuUmVQb3NpdGlvbkNv",
+            "bW1hbmQSTQoIR2V0TWV0ZW8SIS5HcnBjRGl2aXNpb25Db250cm9sVW5pdC5Q",
+            "b3NpdGlvbhoeLkdycGNEaXZpc2lvbkNvbnRyb2xVbml0Lk1ldGVvElgKCklu",
+            "UG9zaXRpb24SIS5HcnBjRGl2aXNpb25Db250cm9sVW5pdC5Qb3NpdGlvbhon",
+            "LkdycGNEaXZpc2lvbkNvbnRyb2xVbml0LkFzc2F1bHRDb21tYW5kQhqqAhdH",
+            "cnBjRGl2aXNpb25Db250cm9sVW5pdGIGcHJvdG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::GrpcDivisionControlUnit.RegisterArtilleryUnitRequest), global::GrpcDivisionControlUnit.RegisterArtilleryUnitRequest.Parser, new[]{ "UnitId", "Longitude", "Latitude" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::GrpcDivisionControlUnit.RePositionCommand), global::GrpcDivisionControlUnit.RePositionCommand.Parser, new[]{ "Longitude", "Latitude", "MainFiringDirection" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::GrpcDivisionControlUnit.GetMeteoRequest), global::GrpcDivisionControlUnit.GetMeteoRequest.Parser, new[]{ "Longitude", "Latitude" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::GrpcDivisionControlUnit.Meteo), global::GrpcDivisionControlUnit.Meteo.Parser, new[]{ "Temperature", "WindAngle", "WindSpeed", "Humidity" }, null, null, null, null)
+            new pbr::GeneratedClrTypeInfo(typeof(global::GrpcDivisionControlUnit.RegisterArtilleryUnitRequest), global::GrpcDivisionControlUnit.RegisterArtilleryUnitRequest.Parser, new[]{ "UnitId", "Position" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::GrpcDivisionControlUnit.RePositionCommand), global::GrpcDivisionControlUnit.RePositionCommand.Parser, new[]{ "Position", "MainFiringDirection" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::GrpcDivisionControlUnit.Meteo), global::GrpcDivisionControlUnit.Meteo.Parser, new[]{ "Temperature", "WindAngle", "WindSpeed", "Humidity" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::GrpcDivisionControlUnit.Position), global::GrpcDivisionControlUnit.Position.Parser, new[]{ "Longitude", "Latitude" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::GrpcDivisionControlUnit.AssaultCommand), global::GrpcDivisionControlUnit.AssaultCommand.Parser, new[]{ "Position", "DirectionDeviation" }, null, null, null, null)
           }));
     }
     #endregion
@@ -78,8 +83,7 @@ namespace GrpcDivisionControlUnit {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public RegisterArtilleryUnitRequest(RegisterArtilleryUnitRequest other) : this() {
       unitId_ = other.unitId_;
-      longitude_ = other.longitude_;
-      latitude_ = other.latitude_;
+      position_ = other.position_ != null ? other.position_.Clone() : null;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -99,25 +103,14 @@ namespace GrpcDivisionControlUnit {
       }
     }
 
-    /// <summary>Field number for the "longitude" field.</summary>
-    public const int LongitudeFieldNumber = 2;
-    private double longitude_;
+    /// <summary>Field number for the "position" field.</summary>
+    public const int PositionFieldNumber = 2;
+    private global::GrpcDivisionControlUnit.Position position_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public double Longitude {
-      get { return longitude_; }
+    public global::GrpcDivisionControlUnit.Position Position {
+      get { return position_; }
       set {
-        longitude_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "latitude" field.</summary>
-    public const int LatitudeFieldNumber = 3;
-    private double latitude_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public double Latitude {
-      get { return latitude_; }
-      set {
-        latitude_ = value;
+        position_ = value;
       }
     }
 
@@ -135,8 +128,7 @@ namespace GrpcDivisionControlUnit {
         return true;
       }
       if (UnitId != other.UnitId) return false;
-      if (!pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.Equals(Longitude, other.Longitude)) return false;
-      if (!pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.Equals(Latitude, other.Latitude)) return false;
+      if (!object.Equals(Position, other.Position)) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -144,8 +136,7 @@ namespace GrpcDivisionControlUnit {
     public override int GetHashCode() {
       int hash = 1;
       if (UnitId.Length != 0) hash ^= UnitId.GetHashCode();
-      if (Longitude != 0D) hash ^= pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.GetHashCode(Longitude);
-      if (Latitude != 0D) hash ^= pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.GetHashCode(Latitude);
+      if (position_ != null) hash ^= Position.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -163,13 +154,9 @@ namespace GrpcDivisionControlUnit {
         output.WriteRawTag(10);
         output.WriteString(UnitId);
       }
-      if (Longitude != 0D) {
-        output.WriteRawTag(17);
-        output.WriteDouble(Longitude);
-      }
-      if (Latitude != 0D) {
-        output.WriteRawTag(25);
-        output.WriteDouble(Latitude);
+      if (position_ != null) {
+        output.WriteRawTag(18);
+        output.WriteMessage(Position);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
@@ -182,11 +169,8 @@ namespace GrpcDivisionControlUnit {
       if (UnitId.Length != 0) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(UnitId);
       }
-      if (Longitude != 0D) {
-        size += 1 + 8;
-      }
-      if (Latitude != 0D) {
-        size += 1 + 8;
+      if (position_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(Position);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -202,11 +186,11 @@ namespace GrpcDivisionControlUnit {
       if (other.UnitId.Length != 0) {
         UnitId = other.UnitId;
       }
-      if (other.Longitude != 0D) {
-        Longitude = other.Longitude;
-      }
-      if (other.Latitude != 0D) {
-        Latitude = other.Latitude;
+      if (other.position_ != null) {
+        if (position_ == null) {
+          Position = new global::GrpcDivisionControlUnit.Position();
+        }
+        Position.MergeFrom(other.Position);
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -223,12 +207,11 @@ namespace GrpcDivisionControlUnit {
             UnitId = input.ReadString();
             break;
           }
-          case 17: {
-            Longitude = input.ReadDouble();
-            break;
-          }
-          case 25: {
-            Latitude = input.ReadDouble();
+          case 18: {
+            if (position_ == null) {
+              Position = new global::GrpcDivisionControlUnit.Position();
+            }
+            input.ReadMessage(Position);
             break;
           }
         }
@@ -262,8 +245,7 @@ namespace GrpcDivisionControlUnit {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public RePositionCommand(RePositionCommand other) : this() {
-      longitude_ = other.longitude_;
-      latitude_ = other.latitude_;
+      position_ = other.position_ != null ? other.position_.Clone() : null;
       mainFiringDirection_ = other.mainFiringDirection_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
@@ -273,30 +255,19 @@ namespace GrpcDivisionControlUnit {
       return new RePositionCommand(this);
     }
 
-    /// <summary>Field number for the "longitude" field.</summary>
-    public const int LongitudeFieldNumber = 1;
-    private double longitude_;
+    /// <summary>Field number for the "position" field.</summary>
+    public const int PositionFieldNumber = 1;
+    private global::GrpcDivisionControlUnit.Position position_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public double Longitude {
-      get { return longitude_; }
+    public global::GrpcDivisionControlUnit.Position Position {
+      get { return position_; }
       set {
-        longitude_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "latitude" field.</summary>
-    public const int LatitudeFieldNumber = 2;
-    private double latitude_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public double Latitude {
-      get { return latitude_; }
-      set {
-        latitude_ = value;
+        position_ = value;
       }
     }
 
     /// <summary>Field number for the "main_firing_direction" field.</summary>
-    public const int MainFiringDirectionFieldNumber = 3;
+    public const int MainFiringDirectionFieldNumber = 2;
     private double mainFiringDirection_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public double MainFiringDirection {
@@ -319,8 +290,7 @@ namespace GrpcDivisionControlUnit {
       if (ReferenceEquals(other, this)) {
         return true;
       }
-      if (!pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.Equals(Longitude, other.Longitude)) return false;
-      if (!pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.Equals(Latitude, other.Latitude)) return false;
+      if (!object.Equals(Position, other.Position)) return false;
       if (!pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.Equals(MainFiringDirection, other.MainFiringDirection)) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
@@ -328,8 +298,7 @@ namespace GrpcDivisionControlUnit {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
-      if (Longitude != 0D) hash ^= pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.GetHashCode(Longitude);
-      if (Latitude != 0D) hash ^= pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.GetHashCode(Latitude);
+      if (position_ != null) hash ^= Position.GetHashCode();
       if (MainFiringDirection != 0D) hash ^= pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.GetHashCode(MainFiringDirection);
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
@@ -344,16 +313,12 @@ namespace GrpcDivisionControlUnit {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      if (Longitude != 0D) {
-        output.WriteRawTag(9);
-        output.WriteDouble(Longitude);
-      }
-      if (Latitude != 0D) {
-        output.WriteRawTag(17);
-        output.WriteDouble(Latitude);
+      if (position_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(Position);
       }
       if (MainFiringDirection != 0D) {
-        output.WriteRawTag(25);
+        output.WriteRawTag(17);
         output.WriteDouble(MainFiringDirection);
       }
       if (_unknownFields != null) {
@@ -364,11 +329,8 @@ namespace GrpcDivisionControlUnit {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
-      if (Longitude != 0D) {
-        size += 1 + 8;
-      }
-      if (Latitude != 0D) {
-        size += 1 + 8;
+      if (position_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(Position);
       }
       if (MainFiringDirection != 0D) {
         size += 1 + 8;
@@ -384,11 +346,11 @@ namespace GrpcDivisionControlUnit {
       if (other == null) {
         return;
       }
-      if (other.Longitude != 0D) {
-        Longitude = other.Longitude;
-      }
-      if (other.Latitude != 0D) {
-        Latitude = other.Latitude;
+      if (other.position_ != null) {
+        if (position_ == null) {
+          Position = new global::GrpcDivisionControlUnit.Position();
+        }
+        Position.MergeFrom(other.Position);
       }
       if (other.MainFiringDirection != 0D) {
         MainFiringDirection = other.MainFiringDirection;
@@ -404,173 +366,15 @@ namespace GrpcDivisionControlUnit {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
-          case 9: {
-            Longitude = input.ReadDouble();
+          case 10: {
+            if (position_ == null) {
+              Position = new global::GrpcDivisionControlUnit.Position();
+            }
+            input.ReadMessage(Position);
             break;
           }
           case 17: {
-            Latitude = input.ReadDouble();
-            break;
-          }
-          case 25: {
             MainFiringDirection = input.ReadDouble();
-            break;
-          }
-        }
-      }
-    }
-
-  }
-
-  public sealed partial class GetMeteoRequest : pb::IMessage<GetMeteoRequest> {
-    private static readonly pb::MessageParser<GetMeteoRequest> _parser = new pb::MessageParser<GetMeteoRequest>(() => new GetMeteoRequest());
-    private pb::UnknownFieldSet _unknownFields;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public static pb::MessageParser<GetMeteoRequest> Parser { get { return _parser; } }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public static pbr::MessageDescriptor Descriptor {
-      get { return global::GrpcDivisionControlUnit.DivisionControlUnitReflection.Descriptor.MessageTypes[2]; }
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    pbr::MessageDescriptor pb::IMessage.Descriptor {
-      get { return Descriptor; }
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public GetMeteoRequest() {
-      OnConstruction();
-    }
-
-    partial void OnConstruction();
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public GetMeteoRequest(GetMeteoRequest other) : this() {
-      longitude_ = other.longitude_;
-      latitude_ = other.latitude_;
-      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public GetMeteoRequest Clone() {
-      return new GetMeteoRequest(this);
-    }
-
-    /// <summary>Field number for the "longitude" field.</summary>
-    public const int LongitudeFieldNumber = 1;
-    private double longitude_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public double Longitude {
-      get { return longitude_; }
-      set {
-        longitude_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "latitude" field.</summary>
-    public const int LatitudeFieldNumber = 2;
-    private double latitude_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public double Latitude {
-      get { return latitude_; }
-      set {
-        latitude_ = value;
-      }
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public override bool Equals(object other) {
-      return Equals(other as GetMeteoRequest);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool Equals(GetMeteoRequest other) {
-      if (ReferenceEquals(other, null)) {
-        return false;
-      }
-      if (ReferenceEquals(other, this)) {
-        return true;
-      }
-      if (!pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.Equals(Longitude, other.Longitude)) return false;
-      if (!pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.Equals(Latitude, other.Latitude)) return false;
-      return Equals(_unknownFields, other._unknownFields);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public override int GetHashCode() {
-      int hash = 1;
-      if (Longitude != 0D) hash ^= pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.GetHashCode(Longitude);
-      if (Latitude != 0D) hash ^= pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.GetHashCode(Latitude);
-      if (_unknownFields != null) {
-        hash ^= _unknownFields.GetHashCode();
-      }
-      return hash;
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public override string ToString() {
-      return pb::JsonFormatter.ToDiagnosticString(this);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void WriteTo(pb::CodedOutputStream output) {
-      if (Longitude != 0D) {
-        output.WriteRawTag(9);
-        output.WriteDouble(Longitude);
-      }
-      if (Latitude != 0D) {
-        output.WriteRawTag(17);
-        output.WriteDouble(Latitude);
-      }
-      if (_unknownFields != null) {
-        _unknownFields.WriteTo(output);
-      }
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public int CalculateSize() {
-      int size = 0;
-      if (Longitude != 0D) {
-        size += 1 + 8;
-      }
-      if (Latitude != 0D) {
-        size += 1 + 8;
-      }
-      if (_unknownFields != null) {
-        size += _unknownFields.CalculateSize();
-      }
-      return size;
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void MergeFrom(GetMeteoRequest other) {
-      if (other == null) {
-        return;
-      }
-      if (other.Longitude != 0D) {
-        Longitude = other.Longitude;
-      }
-      if (other.Latitude != 0D) {
-        Latitude = other.Latitude;
-      }
-      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void MergeFrom(pb::CodedInputStream input) {
-      uint tag;
-      while ((tag = input.ReadTag()) != 0) {
-        switch(tag) {
-          default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
-            break;
-          case 9: {
-            Longitude = input.ReadDouble();
-            break;
-          }
-          case 17: {
-            Latitude = input.ReadDouble();
             break;
           }
         }
@@ -587,7 +391,7 @@ namespace GrpcDivisionControlUnit {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::GrpcDivisionControlUnit.DivisionControlUnitReflection.Descriptor.MessageTypes[3]; }
+      get { return global::GrpcDivisionControlUnit.DivisionControlUnitReflection.Descriptor.MessageTypes[2]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -784,6 +588,326 @@ namespace GrpcDivisionControlUnit {
           }
           case 33: {
             Humidity = input.ReadDouble();
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class Position : pb::IMessage<Position> {
+    private static readonly pb::MessageParser<Position> _parser = new pb::MessageParser<Position>(() => new Position());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<Position> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::GrpcDivisionControlUnit.DivisionControlUnitReflection.Descriptor.MessageTypes[3]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public Position() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public Position(Position other) : this() {
+      longitude_ = other.longitude_;
+      latitude_ = other.latitude_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public Position Clone() {
+      return new Position(this);
+    }
+
+    /// <summary>Field number for the "longitude" field.</summary>
+    public const int LongitudeFieldNumber = 1;
+    private double longitude_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public double Longitude {
+      get { return longitude_; }
+      set {
+        longitude_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "latitude" field.</summary>
+    public const int LatitudeFieldNumber = 2;
+    private double latitude_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public double Latitude {
+      get { return latitude_; }
+      set {
+        latitude_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as Position);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(Position other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (!pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.Equals(Longitude, other.Longitude)) return false;
+      if (!pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.Equals(Latitude, other.Latitude)) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (Longitude != 0D) hash ^= pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.GetHashCode(Longitude);
+      if (Latitude != 0D) hash ^= pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.GetHashCode(Latitude);
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (Longitude != 0D) {
+        output.WriteRawTag(9);
+        output.WriteDouble(Longitude);
+      }
+      if (Latitude != 0D) {
+        output.WriteRawTag(17);
+        output.WriteDouble(Latitude);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (Longitude != 0D) {
+        size += 1 + 8;
+      }
+      if (Latitude != 0D) {
+        size += 1 + 8;
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(Position other) {
+      if (other == null) {
+        return;
+      }
+      if (other.Longitude != 0D) {
+        Longitude = other.Longitude;
+      }
+      if (other.Latitude != 0D) {
+        Latitude = other.Latitude;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 9: {
+            Longitude = input.ReadDouble();
+            break;
+          }
+          case 17: {
+            Latitude = input.ReadDouble();
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class AssaultCommand : pb::IMessage<AssaultCommand> {
+    private static readonly pb::MessageParser<AssaultCommand> _parser = new pb::MessageParser<AssaultCommand>(() => new AssaultCommand());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<AssaultCommand> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::GrpcDivisionControlUnit.DivisionControlUnitReflection.Descriptor.MessageTypes[4]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public AssaultCommand() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public AssaultCommand(AssaultCommand other) : this() {
+      position_ = other.position_ != null ? other.position_.Clone() : null;
+      directionDeviation_ = other.directionDeviation_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public AssaultCommand Clone() {
+      return new AssaultCommand(this);
+    }
+
+    /// <summary>Field number for the "position" field.</summary>
+    public const int PositionFieldNumber = 1;
+    private global::GrpcDivisionControlUnit.Position position_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::GrpcDivisionControlUnit.Position Position {
+      get { return position_; }
+      set {
+        position_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "direction_deviation" field.</summary>
+    public const int DirectionDeviationFieldNumber = 2;
+    private double directionDeviation_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public double DirectionDeviation {
+      get { return directionDeviation_; }
+      set {
+        directionDeviation_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as AssaultCommand);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(AssaultCommand other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (!object.Equals(Position, other.Position)) return false;
+      if (!pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.Equals(DirectionDeviation, other.DirectionDeviation)) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (position_ != null) hash ^= Position.GetHashCode();
+      if (DirectionDeviation != 0D) hash ^= pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.GetHashCode(DirectionDeviation);
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (position_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(Position);
+      }
+      if (DirectionDeviation != 0D) {
+        output.WriteRawTag(17);
+        output.WriteDouble(DirectionDeviation);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (position_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(Position);
+      }
+      if (DirectionDeviation != 0D) {
+        size += 1 + 8;
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(AssaultCommand other) {
+      if (other == null) {
+        return;
+      }
+      if (other.position_ != null) {
+        if (position_ == null) {
+          Position = new global::GrpcDivisionControlUnit.Position();
+        }
+        Position.MergeFrom(other.Position);
+      }
+      if (other.DirectionDeviation != 0D) {
+        DirectionDeviation = other.DirectionDeviation;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10: {
+            if (position_ == null) {
+              Position = new global::GrpcDivisionControlUnit.Position();
+            }
+            input.ReadMessage(Position);
+            break;
+          }
+          case 17: {
+            DirectionDeviation = input.ReadDouble();
             break;
           }
         }

@@ -1,11 +1,9 @@
 ﻿using System;
-using System.Runtime.InteropServices.ComTypes;
 using System.Threading.Tasks;
 using Autofac;
 using CommandDotNet;
 using CommandDotNet.Rendering;
 using Grpc.Core;
-using GrpcDivisionControlUnit;
 using Polly;
 using Polly.Caching;
 using Polly.Contrib.WaitAndRetry;
@@ -30,6 +28,10 @@ namespace ResilienceDemo.Battery
             var console = componentContext.Resolve<IConsole>();
             var policyRegistry = new PolicyRegistry
             {
+                {
+                    RetryPolicyKey.NoRetry.ToString(),
+                    Policy.NoOpAsync()
+                },
                 {
                     RetryPolicyKey.BasicRetryOnRpc.ToString(), Policy
                         .Handle<RpcException>()
@@ -76,8 +78,8 @@ namespace ResilienceDemo.Battery
                 }
                 ,
                 {
-                    CachePolicyKey.NoOp.ToString(),
-                    Policy.NoOpAsync<Meteo>()
+                    CachePolicyKey.NoCache.ToString(),
+                    Policy.NoOpAsync()
                 }
             };
             

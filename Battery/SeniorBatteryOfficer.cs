@@ -40,12 +40,13 @@ namespace ResilienceDemo.Battery
         {
             var retryPolicy = _policyRegistry.Get<IAsyncPolicy>(retryPolicyKey.ToString());
             var cachePolicy = _policyRegistry.Get<IAsyncPolicy>(cachePolicyKey.ToString());
+            var meteoPolicy = Policy.WrapAsync(cachePolicy, retryPolicy);
+            
             _battery.ToArms();
             var coords = new Coordinate(latitude ?? DefaultLatitude, longitude ?? DefaultLongitude);
-            var registrationTask = retryPolicy.ExecuteAndCaptureAsync(_ => RegisterAsync(coords), new Context("Register unit."));
-
-            var meteoPolicy = Policy.WrapAsync(cachePolicy, retryPolicy);
+            
             var meteoTask = meteoPolicy.ExecuteAndCaptureAsync(_ => GetMeteo(coords), new Context("Get meteo."));
+            var registrationTask = retryPolicy.ExecuteAndCaptureAsync(_ => RegisterAsync(coords), new Context("Register unit."));
             await Task.WhenAll(registrationTask, meteoTask);
 
             var registrationPolicyCapture = registrationTask.Result;
@@ -69,16 +70,47 @@ namespace ResilienceDemo.Battery
             
             var retryPolicy = _policyRegistry.Get<IAsyncPolicy>(retryPolicyKey.ToString());
             var cachePolicy = _policyRegistry.Get<IAsyncPolicy>(cachePolicyKey.ToString());
-            var coords = new Coordinate(latitude, longitude);
-            
             var meteoPolicy = Policy.WrapAsync(cachePolicy, retryPolicy);
-            var meteo = await meteoPolicy.ExecuteAndCaptureAsync(_ => GetMeteo(coords), new Context("Get meteo."));
-            //TODO[vbart]
+            
+            var coords = new Coordinate(latitude, longitude);
+            var meteoPolicyResult = await meteoPolicy.ExecuteAndCaptureAsync(
+                _ => GetMeteo(coords),
+                new Context("Get meteo."));
+            if (meteoPolicyResult.Outcome == OutcomeType.Successful)
+            {
+                _battery.UseMeteo(meteoPolicyResult.Result);
+            }
+            else
+            {
+                _console.Out.WriteLine(meteoPolicyResult.FinalException.Message);
+            }
+            
+            var inPositionPolicyResult = await retryPolicy.ExecuteAndCaptureAsync(
+                _ => ReportPosition(coords),
+                new Context("In position."));
+
+            if (inPositionPolicyResult.Outcome == OutcomeType.Failure)
+            {
+                _console.Out.WriteLine(meteoPolicyResult.FinalException.Message);
+            }
+        }
+
+        private async Task<AssaultCommand> ReportPosition(Coordinate coords)
+        {
+            var assaultCommand = await _client.InPositionAsync(new Position
+                               {
+                                   Latitude = coords.Latitude,
+                                   Longitude = coords.Longitude
+                               }, deadline: DateTime.UtcNow.AddMilliseconds(100));
+            
+            _console.Out.WriteLine($"Assault command received. Target: lat: {assaultCommand.Position.Latitude}; lon:{assaultCommand.Position.Longitude}" +
+                                   $" direction: {assaultCommand.DirectionDeviation};");
+            return assaultCommand;
         }
 
         private async Task<Meteo> GetMeteo(Coordinate coordinate)
         {
-            var response = await _client.GetMeteoAsync(new GetMeteoRequest
+            var response = await _client.GetMeteoAsync(new Position
             {
                 Latitude = coordinate.Latitude,
                 Longitude = coordinate.Longitude
@@ -96,12 +128,16 @@ namespace ResilienceDemo.Battery
                 new RegisterArtilleryUnitRequest
                 {
                     UnitId = _battery.Id.ToString(),
-                    Latitude = coordinate.Latitude,
-                    Longitude = coordinate.Longitude
+                    Position = new Position
+                    {
+                        Latitude = coordinate.Latitude,
+                        Longitude = coordinate.Longitude
+                    }
                 }, deadline: DateTime.UtcNow.AddMilliseconds(100));
             
             _console.Out.WriteLine($"Unit {_battery.Id} reported for duty. Re-position command: " +
-                                   $"lat: {response.Latitude}; lon: {response.Longitude}; direction: {response.MainFiringDirection}.");
+                                   $"lat: {response.Position.Latitude}; lon: {response.Position.Longitude}; " +
+                                   $"direction: {response.MainFiringDirection}.");
             
             return response;
         }

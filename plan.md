@@ -11,35 +11,35 @@
 
 # Reactive resiliency patterns
 
-## Retry
+## Retry (done)
 1. show some visual or demo the problem 
 2. basic approach - simple retry with Polly. Show a problem with it. 
 3. improved approach - retry with back-off. Show polly example. Describe a potential problem.
 4. advanced approach - retry with jitter. 
 
-## Circuit Breaker
+## Circuit Breaker (use on client when bulkhead is on server)
 1. show some visual or demo the problem
 2. basic approach - simple circuit breaker with Polly
 3. improve previous demo by wrapping retry policy with circuit breaker
 4. distributed breaker?
 
-## Fall back 
+## Fall back (combine with timeout for correction)
 1. show some visual or demo the problem
 2. improve previous demo by adding a fallback policy
 
 # Proactive resiliency patterns
 
-## Bulkhead
+## Bulkhead (use on client when circuit breaker is on server)
 
 1. show some visual or demo the problem
 2. improve previous demo by adding bulkhead to the service.
 
-## Timeout
+## Timeout (on firing command do timeout for aiming)
 1. show some visual or demo the problem
 2. why use Polly, or custom implementation when you can use default timeouts on DB connections or service clients? 
 3. improve previous demo or show another endpoint usage with timeout
 
-## Cache 
+## Cache (done)
 1. show some visual or demo the problem
 2. why Polly?
 3. Distributed cache? 
