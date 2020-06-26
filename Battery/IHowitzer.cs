@@ -15,12 +15,14 @@ namespace ResilienceDemo.Battery
 
         double Latitude { get; }
 
+        int AmmunitionConsumption { get; }
+
         Task<Howitzer> ToArms();
         
         void RePosition(in double latitude, in double longitude);
 
         Task Aim(double angleHorizontal, double angleVertical, CancellationToken token);
         
-        Task Fire(CancellationToken token);
+        Task Fire(int ammunitionToConsume, CancellationToken token);
     }
 }

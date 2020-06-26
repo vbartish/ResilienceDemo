@@ -1,20 +1,23 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using CommandDotNet;
+using CommandDotNet.Rendering;
 using Polly.Contrib.Simmy;
 using Polly.Contrib.Simmy.Behavior;
 using Polly.Contrib.Simmy.Latency;
-using Polly.Contrib.Simmy.Outcomes;
-
 namespace ResilienceDemo.Battery
 {
     public class Howitzer : IHowitzer
     {
+        private readonly IConsole _console;
         private volatile bool _isOperational;
         private volatile bool _aimingDone;
+        private bool _overheat;
 
-        public Howitzer(int howitzerId)
+        public Howitzer(int howitzerId, IConsole console)
         {
+            _console = console;
             Id = howitzerId;
         }
 
@@ -23,7 +26,9 @@ namespace ResilienceDemo.Battery
         public double Longitude { get; private set; }
 
         public double Latitude { get; private set; }
-        
+
+        public int AmmunitionConsumption { get; private set; }
+
         public double VerticalAngle { get; private set; }
 
         public double HorizontalAngle { get; private set; }
@@ -42,12 +47,15 @@ namespace ResilienceDemo.Battery
 
         public async Task<Howitzer> ToArms()
         {
-            var policy = MonkeyPolicy.InjectBehaviourAsync(with =>
+            IsOperational = false;
+            var policy = MonkeyPolicy.InjectLatencyAsync(with =>
                 with
-                    .Behaviour(() => Task.Delay(2000))
+                    .Latency(TimeSpan.FromSeconds(2))
                     .InjectionRate(0.2).Enabled());
+            
             return await policy.ExecuteAsync(() =>
             {
+                _console.Out.WriteLine($"Howitzer {Id} is operational.");
                 IsOperational = true;
                 return Task.FromResult(this);
             });
@@ -61,37 +69,62 @@ namespace ResilienceDemo.Battery
 
         public Task Aim(double angleHorizontal, double angleVertical, CancellationToken token)
         {
-            token.ThrowIfCancellationRequested();
-            var policy = MonkeyPolicy.InjectExceptionAsync(with =>
+            AimingDone = false;
+            var policy = MonkeyPolicy.InjectBehaviourAsync(with =>
                 with
-                    .Fault((context, cancellationToken) =>
-                        Task.FromException<Exception>(new InvalidOperationException("Unable to aim")))
+                    .Behaviour(async () => await Task.Delay(2000, token))
                     .InjectionRate(0.2)
-                    .Enabled());
+                    .Enabled(true));
             return policy.ExecuteAsync(() =>
             {
+                if (token.IsCancellationRequested)
+                {
+                    _console.Out.WriteLine($"Howitzer {Id} aiming canceled.");
+                }
                 token.ThrowIfCancellationRequested();
+                
                 HorizontalAngle = angleHorizontal;
                 VerticalAngle = angleVertical;
                 AimingDone = true;
+                _console.Out.WriteLine($"Howitzer {Id} aiming done.");
                 return Task.CompletedTask;
             });
         }
 
-        public Task Fire(CancellationToken token)
+        public async Task Fire(int ammunitionToConsume, CancellationToken token)
         {
-            token.ThrowIfCancellationRequested();
-            
-            var policy = MonkeyPolicy.InjectLatencyAsync(with =>
+            _overheat = false;
+            var policy = MonkeyPolicy.InjectBehaviourAsync(with =>
                 with
-                    .Latency(TimeSpan.FromMilliseconds(500))
-                    .InjectionRate(0.2)
+                    .Behaviour(() =>
+                    {
+                        _overheat = true;
+                        return Task.CompletedTask;
+                    })
+                    .InjectionRate(0.05)
                     .Enabled());
-            return policy.ExecuteAsync(() =>
+
+            for (var ammunitionCounter = 0; ammunitionCounter < ammunitionToConsume; ammunitionCounter++)
             {
-                token.ThrowIfCancellationRequested();
-                return Task.CompletedTask;
-            });
+                await policy.ExecuteAsync(async () =>
+                {
+                    if (token.IsCancellationRequested)
+                    {
+                        _console.Out.WriteLine($"Howitzer {Id} firing canceled.");
+                    }
+
+                    token.ThrowIfCancellationRequested();
+
+                    if (_overheat)
+                    {
+                        _console.Out.WriteLine($"Howitzer {Id} overheated. Waiting for cooldown.");
+                        await Task.Delay(400, token);
+                        _overheat = false;
+                    }
+
+                    AmmunitionConsumption++;
+                });
+            }
         }
     }
 }

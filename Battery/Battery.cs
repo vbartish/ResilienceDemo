@@ -36,15 +36,12 @@ namespace ResilienceDemo.Battery
             var watch = new Stopwatch();
             watch.Start();
 
-            var policyResult = await policy
+            await policy
                 .ExecuteAndCaptureAsync(
                     _ => Task.WhenAll(_howitzers.Select(howitzer => howitzer.ToArms())), 
                     new Context("Battery to arms."));
 
-            if (policyResult.Outcome == OutcomeType.Failure)
-            {
-                _howitzers.RemoveAll(h => !h.IsOperational);
-            }
+            _howitzers.RemoveAll(h => !h.IsOperational);
 
             watch.Stop();
             _console.Out.WriteLine($"Battery {Id} with {_howitzers.Count} howitzers reporting for duty within {watch.ElapsedMilliseconds} ms.");
@@ -58,16 +55,49 @@ namespace ResilienceDemo.Battery
             Console.WriteLine($"Position changed to lat: {latitude}; lon: {longitude};");
         }
 
-        public Task Aim(double angleHorizontal, double angleVertical, CancellationToken token)
+        public async Task Aim(double angleHorizontal, double angleVertical, TimeoutPolicyKey timeoutPolicyKey)
         {
-            token.ThrowIfCancellationRequested();
-            return Task.WhenAll(_howitzers.Select(h => h.Aim(angleHorizontal, angleVertical, token)));
+            var timeoutPolicy = _policyRegistry.Get<IAsyncPolicy>(timeoutPolicyKey.ToString());
+            var watch = new Stopwatch();
+            watch.Start();
+
+            await timeoutPolicy.ExecuteAndCaptureAsync(
+                (policyContext, token) => Task.WhenAll(_howitzers.Select(h => h.Aim(
+                    angleHorizontal,
+                    angleVertical,
+                    token))),
+                new Context("Battery aiming"),
+                CancellationToken.None); // CancellationToken.None means we don't want independent cancellation control
+            
+            watch.Stop();
+            _console.Out.WriteLine($"Battery {Id} with {_howitzers.Count(h=>h.AimingDone)} howitzers ready to fire within {watch.ElapsedMilliseconds} ms.");
         }
 
-        public Task Fire(CancellationToken token)
+        public async Task Fire(int ammunitionPerHowitzer, TimeoutPolicyKey timeoutPolicyKey)
         {
-            token.ThrowIfCancellationRequested();
-            return Task.WhenAll(_howitzers.Where(h=> h.AimingDone).Select(h => h.Fire(token)));
+            var timeoutPolicy = _policyRegistry.Get<IAsyncPolicy>(timeoutPolicyKey.ToString());
+            var watch = new Stopwatch();
+            watch.Start();
+
+            await timeoutPolicy.ExecuteAndCaptureAsync(
+                (policyContext, token) => Task.WhenAll(_howitzers
+                    .Where(h => h.AimingDone)
+                    .Select(h => h.Fire(ammunitionPerHowitzer, token))),
+                new Context("Battery firing"),
+                CancellationToken.None); // CancellationToken.None means we don't want independent cancellation control);
+            
+            watch.Stop();
+            _console.Out.WriteLine($"Battery {Id} firing done within {watch.ElapsedMilliseconds} ms.");
+            foreach (var howitzer in _howitzers)
+            {
+                _console.Out.WriteLine($"Howitzer {howitzer.Id} ammunition consumption {howitzer.AmmunitionConsumption}.");
+            }
+        }
+
+        public Task Disengage()
+        {
+            _console.Out.WriteLine("Battery disengaged.");
+            return Task.CompletedTask;
         }
     }
 }

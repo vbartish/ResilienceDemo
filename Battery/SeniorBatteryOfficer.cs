@@ -38,9 +38,9 @@ namespace ResilienceDemo.Battery
         }
             
         public async Task ToArms(
-            [Option(ShortName = "r")] RetryPolicyKey retryPolicyKey = RetryPolicyKey.NoRetry,
-            [Option(ShortName = "c")] CachePolicyKey cachePolicyKey = CachePolicyKey.NoCache,
-            [Option(ShortName = "t")] TimeoutPolicyKey timeoutPolicyKey = TimeoutPolicyKey.NoTimeout,
+            [Option(ShortName = "r")] RetryPolicyKey retryPolicyKey = RetryPolicyKey.RetryOnRpcWithJitter,
+            [Option(ShortName = "c")] CachePolicyKey cachePolicyKey = CachePolicyKey.InMemoryCache,
+            [Option(ShortName = "t")] TimeoutPolicyKey timeoutPolicyKey = TimeoutPolicyKey.DefaultPessimisticTimeout,
             double? latitude = null, double? longitude = null)
         {
             var retryPolicy = _policyRegistry.Get<IAsyncPolicy>(retryPolicyKey.ToString());
@@ -75,8 +75,8 @@ namespace ResilienceDemo.Battery
         public async Task RePosition(
             double latitude,
             double longitude,
-            [Option] RetryPolicyKey retryPolicyKey = RetryPolicyKey.BasicRetryOnRpc,
-            [Option] CachePolicyKey cachePolicyKey = CachePolicyKey.InMemoryCache)
+            [Option(ShortName = "r")] RetryPolicyKey retryPolicyKey = RetryPolicyKey.RetryOnRpcWithJitter,
+            [Option(ShortName = "c")] CachePolicyKey cachePolicyKey = CachePolicyKey.InMemoryCache)
         {
             _battery.RePosition(latitude, longitude);
             
@@ -111,26 +111,62 @@ namespace ResilienceDemo.Battery
             double targetLatitude,
             double targetLongitude,
             double directionDeviation,
-            [Option] TimeoutPolicyKey timeoutPolicyKey = TimeoutPolicyKey.NoTimeout,
-            [Option] TimeoutPolicyKey correctionTimeoutPolicyKey = TimeoutPolicyKey.NoTimeout,
-            [Option] bool useCorrectionFallback = false)
+            [Option(ShortName = "t")] TimeoutPolicyKey timeoutPolicyKey = TimeoutPolicyKey.DefaultOptimisticTimeout,
+            [Option(ShortName = "c")] TimeoutPolicyKey correctionTimeoutPolicyKey = TimeoutPolicyKey.DefaultOptimisticTimeout)
         {
-            var timeoutPolicy = _policyRegistry.Get<IAsyncPolicy>(timeoutPolicyKey.ToString());
+            
             var (horizontal, vertical) = GetAngles(targetLatitude, targetLongitude, directionDeviation);
             
-            await timeoutPolicy.ExecuteAndCaptureAsync(
-                (context, token) => _battery.Aim(horizontal, vertical, token),
-                new Context("Battery aiming"),
-                CancellationToken.None // CancellationToken.None means we don't want independent cancellation control
-            );
+            await _battery.Aim(horizontal, vertical, timeoutPolicyKey);
+            await _battery.Fire(40, timeoutPolicyKey);
 
-            await timeoutPolicy.ExecuteAndCaptureAsync(
-                (context, token) => _battery.Fire(token),
-                new Context("Battery firing"),
-                CancellationToken.None // CancellationToken.None means we don't want independent cancellation control
-            );
-            
-            
+            var correctionTimeoutPolicy = _policyRegistry.Get<IAsyncPolicy>(correctionTimeoutPolicyKey.ToString());
+            var correctionFallbackPolicy = Policy
+                .Handle<RpcException>()
+                .FallbackAsync(
+                    async token =>
+                    {
+                        var coordBoundaries = new CoordinateBoundaries(_battery.Latitude, _battery.Longitude, 2,
+                            DistanceUnit.Kilometers);
+                        _battery.RePosition(
+                            _faker.Random.Double(coordBoundaries.MinLatitude, coordBoundaries.MaxLatitude),
+                            _faker.Random.Double(coordBoundaries.MinLongitude, coordBoundaries.MaxLongitude)
+                        );
+                        var assaultCommand = await _client.InPositionAsync(new Position
+                        {
+                            Latitude = _battery.Latitude,
+                            Longitude = _battery.Longitude
+                        }, deadline: DateTime.UtcNow.AddMilliseconds(100));
+
+                        _console.Out.WriteLine(
+                            $"Assault command received. Target: lat: {assaultCommand.Position.Latitude}; lon:{assaultCommand.Position.Longitude}" +
+                            $" direction: {assaultCommand.DirectionDeviation};");
+                    },
+                    async exception =>
+                    {
+                        _console.Out.WriteLine("Could not get correction, falling back to new position.");
+                        await Task.CompletedTask;
+                    });
+
+            var lastResortPolicy = Policy.Handle<RpcException>().FallbackAsync(token => _battery.Disengage());
+
+            var policyWrap = Policy.WrapAsync(lastResortPolicy, correctionFallbackPolicy, correctionTimeoutPolicy);
+
+            await policyWrap.ExecuteAsync(async (token) =>
+                {
+                    var correction = await _client.GetCorrectionAsync(
+                        new Position
+                        {
+                            Latitude = _battery.Latitude,
+                            Longitude = _battery.Longitude
+                        },
+                        cancellationToken: token);
+
+                    _console.Out.WriteLine(
+                        $"Assault command correction received. Target: lat: {correction.Position.Latitude}; lon:{correction.Position.Longitude}" +
+                        $" direction: {correction.DirectionDeviation};");
+                },
+                CancellationToken.None);
 
         }
 
@@ -163,7 +199,7 @@ namespace ResilienceDemo.Battery
                 Longitude = coordinate.Longitude
             }, deadline: DateTime.UtcNow.AddMilliseconds(100));
 
-            _console.Out.WriteLine($"Got meteo for (lat: {coordinate.Latitude}; lon: {coordinate.Longitude}): {Environment.NewLine}" +
+            _console.Out.WriteLine($"Got meteo for (lat: {coordinate.Latitude}; lon: {coordinate.Longitude}):" +
                                    $" temperature: {response.Temperature}; wind angle: {response.WindAngle};" +
                                    $" wind speed: {response.WindSpeed}; humidity: {response.Humidity}.");
             return response;

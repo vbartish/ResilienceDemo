@@ -9,7 +9,9 @@ service DivisionControlUnit {
   
   rpc GetMeteo (Position) returns (Meteo);
   
-  rpc InPosition (Position) returns (AssaultCommand); 
+  rpc InPosition (Position) returns (AssaultCommand);
+
+  rpc GetCorrection (Position) returns (AssaultCommand);
 }
 
 message RegisterArtilleryUnitRequest {

@@ -39,6 +39,13 @@ namespace GrpcDivisionControlUnit {
         __Marshaller_GrpcDivisionControlUnit_Position,
         __Marshaller_GrpcDivisionControlUnit_AssaultCommand);
 
+    static readonly grpc::Method<global::GrpcDivisionControlUnit.Position, global::GrpcDivisionControlUnit.AssaultCommand> __Method_GetCorrection = new grpc::Method<global::GrpcDivisionControlUnit.Position, global::GrpcDivisionControlUnit.AssaultCommand>(
+        grpc::MethodType.Unary,
+        __ServiceName,
+        "GetCorrection",
+        __Marshaller_GrpcDivisionControlUnit_Position,
+        __Marshaller_GrpcDivisionControlUnit_AssaultCommand);
+
     /// <summary>Service descriptor</summary>
     public static global::Google.Protobuf.Reflection.ServiceDescriptor Descriptor
     {
@@ -60,6 +67,11 @@ namespace GrpcDivisionControlUnit {
       }
 
       public virtual global::System.Threading.Tasks.Task<global::GrpcDivisionControlUnit.AssaultCommand> InPosition(global::GrpcDivisionControlUnit.Position request, grpc::ServerCallContext context)
+      {
+        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
+      }
+
+      public virtual global::System.Threading.Tasks.Task<global::GrpcDivisionControlUnit.AssaultCommand> GetCorrection(global::GrpcDivisionControlUnit.Position request, grpc::ServerCallContext context)
       {
         throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
       }
@@ -137,6 +149,22 @@ namespace GrpcDivisionControlUnit {
       {
         return CallInvoker.AsyncUnaryCall(__Method_InPosition, null, options, request);
       }
+      public virtual global::GrpcDivisionControlUnit.AssaultCommand GetCorrection(global::GrpcDivisionControlUnit.Position request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return GetCorrection(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual global::GrpcDivisionControlUnit.AssaultCommand GetCorrection(global::GrpcDivisionControlUnit.Position request, grpc::CallOptions options)
+      {
+        return CallInvoker.BlockingUnaryCall(__Method_GetCorrection, null, options, request);
+      }
+      public virtual grpc::AsyncUnaryCall<global::GrpcDivisionControlUnit.AssaultCommand> GetCorrectionAsync(global::GrpcDivisionControlUnit.Position request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return GetCorrectionAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual grpc::AsyncUnaryCall<global::GrpcDivisionControlUnit.AssaultCommand> GetCorrectionAsync(global::GrpcDivisionControlUnit.Position request, grpc::CallOptions options)
+      {
+        return CallInvoker.AsyncUnaryCall(__Method_GetCorrection, null, options, request);
+      }
       /// <summary>Creates a new instance of client from given <c>ClientBaseConfiguration</c>.</summary>
       protected override DivisionControlUnitClient NewInstance(ClientBaseConfiguration configuration)
       {
@@ -151,7 +179,8 @@ namespace GrpcDivisionControlUnit {
       return grpc::ServerServiceDefinition.CreateBuilder()
           .AddMethod(__Method_RegisterUnit, serviceImpl.RegisterUnit)
           .AddMethod(__Method_GetMeteo, serviceImpl.GetMeteo)
-          .AddMethod(__Method_InPosition, serviceImpl.InPosition).Build();
+          .AddMethod(__Method_InPosition, serviceImpl.InPosition)
+          .AddMethod(__Method_GetCorrection, serviceImpl.GetCorrection).Build();
     }
 
     /// <summary>Register service method with a service binder with or without implementation. Useful when customizing the  service binding logic.
@@ -163,6 +192,7 @@ namespace GrpcDivisionControlUnit {
       serviceBinder.AddMethod(__Method_RegisterUnit, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::GrpcDivisionControlUnit.RegisterArtilleryUnitRequest, global::GrpcDivisionControlUnit.RePositionCommand>(serviceImpl.RegisterUnit));
       serviceBinder.AddMethod(__Method_GetMeteo, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::GrpcDivisionControlUnit.Position, global::GrpcDivisionControlUnit.Meteo>(serviceImpl.GetMeteo));
       serviceBinder.AddMethod(__Method_InPosition, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::GrpcDivisionControlUnit.Position, global::GrpcDivisionControlUnit.AssaultCommand>(serviceImpl.InPosition));
+      serviceBinder.AddMethod(__Method_GetCorrection, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::GrpcDivisionControlUnit.Position, global::GrpcDivisionControlUnit.AssaultCommand>(serviceImpl.GetCorrection));
     }
 
   }

@@ -18,8 +18,10 @@ namespace ResilienceDemo.Battery
 
         void RePosition(double latitude, double longitude);
         
-        Task Aim(double anglesHorizontal, double anglesVertical, CancellationToken token);
+        Task Aim(double anglesHorizontal, double anglesVertical, TimeoutPolicyKey timeoutPolicyKey);
 
-        Task Fire(CancellationToken token);
+        Task Fire(int ammunitionPerHowitzer, TimeoutPolicyKey token);
+        
+        Task Disengage();
     }
 }

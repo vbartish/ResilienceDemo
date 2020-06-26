@@ -21,7 +21,7 @@ namespace ResilienceDemo.Battery
             builder
                 .Register(GetDefaultRegistry)
                 .As<IReadOnlyPolicyRegistry<string>>()
-                .InstancePerLifetimeScope();
+                .SingleInstance();
         }
 
         private static PolicyRegistry GetDefaultRegistry(IComponentContext componentContext)
@@ -61,7 +61,7 @@ namespace ResilienceDemo.Battery
                     Policy
                         .Handle<RpcException>()
                         .WaitAndRetryAsync(Backoff.DecorrelatedJitterBackoffV2(
-                            TimeSpan.FromMilliseconds(50),
+                            TimeSpan.FromMilliseconds(100),
                             MaxRetries), (exception, timeSpan, retryAttempt, context) =>
                         {
                             console.Out.WriteLine(
@@ -91,7 +91,7 @@ namespace ResilienceDemo.Battery
                 },
                 {
                     TimeoutPolicyKey.DefaultPessimisticTimeout.ToString(),
-                    Policy.TimeoutAsync(TimeSpan.FromMilliseconds(100), TimeoutStrategy.Pessimistic, (context, span, task) =>
+                    Policy.TimeoutAsync(TimeSpan.FromMilliseconds(500), TimeoutStrategy.Pessimistic, (context, span, task) =>
                     {
                         // do not await, otherwise policy is useless.
                         task.ContinueWith(t =>
@@ -125,7 +125,7 @@ namespace ResilienceDemo.Battery
                 },
                 {
                     TimeoutPolicyKey.DefaultOptimisticTimeout.ToString(),
-                    Policy.TimeoutAsync(TimeSpan.FromMilliseconds(100), TimeoutStrategy.Optimistic)
+                    Policy.TimeoutAsync(TimeSpan.FromMilliseconds(500), TimeoutStrategy.Optimistic)
                 }
             };
             

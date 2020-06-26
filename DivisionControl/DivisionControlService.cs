@@ -63,7 +63,8 @@ namespace ResilienceDemo.DivisionControl
                 {
                     with
                         .Latency(TimeSpan.FromSeconds(2))
-                        .InjectionRate(1)
+                        .InjectionRate(0.5)
+                        .Enabled()
                         .EnabledWhen((_, __) => Task.FromResult(++_meteoCounter % MeteoSuccessEvery != 0));
                 });
 
@@ -106,6 +107,11 @@ namespace ResilienceDemo.DivisionControl
                     },
                     DirectionDeviation = Math.Round(_faker.Random.Double(0, 360), 2)
                 }));
+        }
+
+        public override Task<AssaultCommand> GetCorrection(Position request, ServerCallContext context)
+        {
+            throw new RpcException(new Status(StatusCode.Unavailable, "Correction is unavailable"));
         }
     }
 }
