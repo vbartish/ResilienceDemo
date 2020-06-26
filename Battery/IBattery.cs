@@ -23,5 +23,7 @@ namespace ResilienceDemo.Battery
         Task Fire(int ammunitionPerHowitzer, TimeoutPolicyKey token);
         
         Task Disengage();
+
+        Task BattleReport();
     }
 }

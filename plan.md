@@ -23,7 +23,7 @@
 3. improve previous demo by wrapping retry policy with circuit breaker
 4. distributed breaker?
 
-## Fall back (combine with timeout for correction)
+## Fall back (done)
 1. show some visual or demo the problem
 2. improve previous demo by adding a fallback policy
 
@@ -44,7 +44,7 @@
 2. why Polly?
 3. Distributed cache? 
 
-# Testing resiliency (?)
+# Testing resiliency (done)
 1. NoOp policy? 
 2. Simmy?
 

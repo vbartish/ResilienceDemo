@@ -20,4 +20,10 @@
         DefaultPessimisticTimeout,
         DefaultOptimisticTimeout
     }
+    
+    public enum CircuitBreakerPolicyKey
+    {
+        NoBreaker, 
+        DefaultCircuitBreaker
+    }
 }

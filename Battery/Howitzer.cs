@@ -3,26 +3,39 @@ using System.Threading;
 using System.Threading.Tasks;
 using CommandDotNet;
 using CommandDotNet.Rendering;
+using Grpc.Core;
+using GrpcDivisionControlUnit;
+using Polly;
 using Polly.Contrib.Simmy;
 using Polly.Contrib.Simmy.Behavior;
 using Polly.Contrib.Simmy.Latency;
+using Polly.Registry;
+
 namespace ResilienceDemo.Battery
 {
     public class Howitzer : IHowitzer
     {
         private readonly IConsole _console;
+        private readonly IReadOnlyPolicyRegistry<string> _policyRegistry;
+        private readonly DivisionControlUnit.DivisionControlUnitClient _client;
         private volatile bool _isOperational;
         private volatile bool _aimingDone;
         private bool _overheat;
 
-        public Howitzer(int howitzerId, IConsole console)
+        public Howitzer(
+            int howitzerId,
+            IConsole console,
+            IReadOnlyPolicyRegistry<string> policyRegistry,
+            DivisionControlUnit.DivisionControlUnitClient client)
         {
             _console = console;
+            _policyRegistry = policyRegistry;
+            _client = client;
             Id = howitzerId;
         }
 
         public int Id { get; }
-        
+
         public double Longitude { get; private set; }
 
         public double Latitude { get; private set; }
@@ -38,7 +51,7 @@ namespace ResilienceDemo.Battery
             get => _isOperational;
             private set => _isOperational = value;
         }
-        
+
         public bool AimingDone
         {
             get => _aimingDone;
@@ -52,7 +65,7 @@ namespace ResilienceDemo.Battery
                 with
                     .Latency(TimeSpan.FromSeconds(2))
                     .InjectionRate(0.2).Enabled());
-            
+
             return await policy.ExecuteAsync(() =>
             {
                 _console.Out.WriteLine($"Howitzer {Id} is operational.");
@@ -81,8 +94,9 @@ namespace ResilienceDemo.Battery
                 {
                     _console.Out.WriteLine($"Howitzer {Id} aiming canceled.");
                 }
+
                 token.ThrowIfCancellationRequested();
-                
+
                 HorizontalAngle = angleHorizontal;
                 VerticalAngle = angleVertical;
                 AimingDone = true;
@@ -125,6 +139,40 @@ namespace ResilienceDemo.Battery
                     AmmunitionConsumption++;
                 });
             }
+        }
+
+        public async Task BattleReport()
+        {
+            var retryPolicy =
+                _policyRegistry.Get<IAsyncPolicy>(RetryPolicyKey.RetryOnRpcWithExponentialBackoff.ToString());
+            var circuitBreakerPolicy =
+                _policyRegistry.Get<IAsyncPolicy>(CircuitBreakerPolicyKey.DefaultCircuitBreaker.ToString());
+
+            var wrap = Policy.WrapAsync(retryPolicy, circuitBreakerPolicy);
+
+            await Task.WhenAll(
+                wrap.ExecuteAsync(async () =>
+                {
+                    await _client.BattleReportAsync(new Report
+                    {
+                        ReportData = "report data 1"
+                    });
+                }),
+                wrap.ExecuteAsync(async () =>
+                {
+                    await _client.BattleReportAsync(new Report
+                    {
+                        ReportData = "report data 2"
+                    });
+                }),
+                wrap.ExecuteAsync(async () =>
+                {
+                    await _client.BattleReportAsync(new Report
+                    {
+                        ReportData = "report data 3"
+                    });
+                }));
+            _console.Out.WriteLine($"Howitzer {Id} battle report done.");
         }
     }
 }

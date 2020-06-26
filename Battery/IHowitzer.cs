@@ -24,5 +24,7 @@ namespace ResilienceDemo.Battery
         Task Aim(double angleHorizontal, double angleVertical, CancellationToken token);
         
         Task Fire(int ammunitionToConsume, CancellationToken token);
+
+        Task BattleReport();
     }
 }

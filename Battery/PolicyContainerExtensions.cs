@@ -126,7 +126,27 @@ namespace ResilienceDemo.Battery
                 {
                     TimeoutPolicyKey.DefaultOptimisticTimeout.ToString(),
                     Policy.TimeoutAsync(TimeSpan.FromMilliseconds(500), TimeoutStrategy.Optimistic)
-                }
+                },
+                {
+                    CircuitBreakerPolicyKey.NoBreaker.ToString(),
+                    Policy.NoOpAsync()
+                },
+                {
+                    CircuitBreakerPolicyKey.DefaultCircuitBreaker.ToString(),
+                    Policy
+                        .Handle<RpcException>()
+                        .CircuitBreakerAsync(
+                            1,
+                            TimeSpan.FromMilliseconds(50),
+                            (exception, span) =>
+                            {
+                                console.WriteLine("Circuit breaker in action.");
+                            },
+                            () =>
+                            {
+                                console.WriteLine("Circuit breaker reset.");
+                            })
+                },
             };
             
             return policyRegistry;

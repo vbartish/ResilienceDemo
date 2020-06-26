@@ -6,7 +6,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using CommandDotNet;
 using CommandDotNet.Rendering;
+using Grpc.Core;
 using Polly;
+using Polly.CircuitBreaker;
 using Polly.Registry;
 
 namespace ResilienceDemo.Battery
@@ -98,6 +100,19 @@ namespace ResilienceDemo.Battery
         {
             _console.Out.WriteLine("Battery disengaged.");
             return Task.CompletedTask;
+        }
+
+        public async Task BattleReport()
+        {
+            var fallbackPolicy = Policy
+                .Handle<BrokenCircuitException>()
+                .Or<RpcException>(e => e.Status.StatusCode == StatusCode.ResourceExhausted)
+                .FallbackAsync(async token =>
+                {
+                    _console.Out.WriteLine("Reporting service unavailable. Lets get a smoke.");
+                    await Task.CompletedTask;
+                });
+            await fallbackPolicy.ExecuteAsync(() => Task.WhenAll(_howitzers.Select(h => h.BattleReport())));
         }
     }
 }

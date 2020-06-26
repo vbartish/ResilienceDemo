@@ -6,6 +6,7 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using Polly.Caching;
 using Polly.Caching.Memory;
+using Polly.Registry;
 using DivisionControlUnitClient = GrpcDivisionControlUnit.DivisionControlUnit.DivisionControlUnitClient;
     
 namespace ResilienceDemo.Battery
@@ -19,10 +20,12 @@ namespace ResilienceDemo.Battery
             builder.Register(context =>
             {
                 var console = context.Resolve<IConsole>();
+                var policies = context.Resolve<IReadOnlyPolicyRegistry<string>>();
+                var divisionControl = context.Resolve<DivisionControlUnitClient>();
                 var result = new List<IHowitzer>();
                 for (var howitzerId = 0; howitzerId < 6; howitzerId++)
                 {
-                    var howitzer = new Howitzer(howitzerId, console);
+                    var howitzer = new Howitzer(howitzerId, console, policies, divisionControl);
                     result.Add(howitzer);
                 }
                 return result;

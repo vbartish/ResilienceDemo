@@ -167,7 +167,11 @@ namespace ResilienceDemo.Battery
                         $" direction: {correction.DirectionDeviation};");
                 },
                 CancellationToken.None);
+        }
 
+        public async Task BattleReport()
+        {
+            await _battery.BattleReport();
         }
 
         private (double Horizontal, double Vertical) GetAngles(

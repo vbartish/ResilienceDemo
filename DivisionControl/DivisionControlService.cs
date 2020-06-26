@@ -8,6 +8,8 @@ using GrpcDivisionControlUnit;
 using Polly.Contrib.Simmy;
 using Polly.Contrib.Simmy.Latency;
 using Bogus;
+using Polly;
+using Polly.Bulkhead;
 using Polly.Contrib.Simmy.Outcomes;
 
 namespace ResilienceDemo.DivisionControl
@@ -18,6 +20,12 @@ namespace ResilienceDemo.DivisionControl
         private const int MeteoSuccessEvery = 3;
         private static int _registerUnitCounter;
         private static int _meteoCounter;
+
+        private readonly IAsyncPolicy _reportingBulkhead =
+            Policy.BulkheadAsync(2, 1, async context =>
+            {
+                Console.WriteLine("Bulkhead rejection happened");
+            });
         
         private readonly Faker _faker = new Faker();
 
@@ -112,6 +120,20 @@ namespace ResilienceDemo.DivisionControl
         public override Task<AssaultCommand> GetCorrection(Position request, ServerCallContext context)
         {
             throw new RpcException(new Status(StatusCode.Unavailable, "Correction is unavailable"));
+        }
+
+        public override async Task<Empty> BattleReport(Report request, ServerCallContext context)
+        {
+            try
+            {
+                await _reportingBulkhead.ExecuteAsync(async () => await Task.Delay(3000));
+            }
+            catch (BulkheadRejectedException e)
+            {
+                throw new RpcException(new Status(StatusCode.ResourceExhausted, "Bulkhead says hello."));
+            }
+            
+            return new Empty();
         }
     }
 }

@@ -12,6 +12,8 @@ service DivisionControlUnit {
   rpc InPosition (Position) returns (AssaultCommand);
 
   rpc GetCorrection (Position) returns (AssaultCommand);
+  
+  rpc BattleReport (Report) returns (Empty);
 }
 
 message RegisterArtilleryUnitRequest {
@@ -39,4 +41,12 @@ message Position {
 message AssaultCommand {
   Position position = 1;
   double direction_deviation = 2;
+}
+
+message Report {
+  string report_data = 1; 
+}
+
+message Empty {
+  
 }
