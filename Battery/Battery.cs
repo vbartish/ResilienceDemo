@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using CommandDotNet;
 using CommandDotNet.Rendering;
-using GrpcDivisionControlUnit;
 using Polly;
 using Polly.Registry;
 
@@ -14,7 +14,6 @@ namespace ResilienceDemo.Battery
     public class Battery : IBattery
     {
         private readonly IConsole _console;
-        private Meteo _currentMeteo;
         private readonly List<IHowitzer> _howitzers;
         private readonly IReadOnlyPolicyRegistry<string> _policyRegistry;
 
@@ -26,6 +25,10 @@ namespace ResilienceDemo.Battery
         }
         
         public Guid Id { get; } = Guid.NewGuid();
+        
+        public double Longitude { get; private set; }
+
+        public double Latitude { get; private set; }
 
         public async Task ToArms(TimeoutPolicyKey policyKey)
         {
@@ -49,12 +52,22 @@ namespace ResilienceDemo.Battery
 
         public void RePosition(double latitude, double longitude)
         {
+            _howitzers.ForEach(h => h.RePosition(latitude, longitude));
+            Longitude = longitude;
+            Latitude = latitude;
             Console.WriteLine($"Position changed to lat: {latitude}; lon: {longitude};");
         }
 
-        public void UseMeteo(Meteo meteo)
+        public Task Aim(double angleHorizontal, double angleVertical, CancellationToken token)
         {
-            _currentMeteo = meteo;
+            token.ThrowIfCancellationRequested();
+            return Task.WhenAll(_howitzers.Select(h => h.Aim(angleHorizontal, angleVertical, token)));
+        }
+
+        public Task Fire(CancellationToken token)
+        {
+            token.ThrowIfCancellationRequested();
+            return Task.WhenAll(_howitzers.Where(h=> h.AimingDone).Select(h => h.Fire(token)));
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Bogus;
 using CommandDotNet;
 using CommandDotNet.Rendering;
 using Geolocation;
@@ -17,9 +18,12 @@ namespace ResilienceDemo.Battery
         private const double DefaultLatitude = 50.014495;
         private const double DefaultLongitude = 23.730392;
         private readonly DivisionControlUnit.DivisionControlUnitClient _client;
+        private readonly Faker _faker = new Faker();
         private readonly IBattery _battery;
         private readonly IConsole _console;
         private readonly IReadOnlyPolicyRegistry<string> _policyRegistry;
+        private double _mainFiringDirection;
+        private Meteo _meteo;
 
         public SeniorBatteryOfficer(
             DivisionControlUnit.DivisionControlUnitClient client,
@@ -57,6 +61,10 @@ namespace ResilienceDemo.Battery
             {
                 _console.Out.WriteLine(registrationPolicyCapture.FinalException.Message);
             }
+            else
+            {
+                _mainFiringDirection = registrationPolicyCapture.Result.MainFiringDirection;
+            }
             
             if (meteoPolicyCapture.Outcome == OutcomeType.Failure)
             {
@@ -64,7 +72,10 @@ namespace ResilienceDemo.Battery
             }
         }
 
-        public async Task RePosition(double latitude, double longitude, [Option] RetryPolicyKey retryPolicyKey = RetryPolicyKey.BasicRetryOnRpc,
+        public async Task RePosition(
+            double latitude,
+            double longitude,
+            [Option] RetryPolicyKey retryPolicyKey = RetryPolicyKey.BasicRetryOnRpc,
             [Option] CachePolicyKey cachePolicyKey = CachePolicyKey.InMemoryCache)
         {
             _battery.RePosition(latitude, longitude);
@@ -79,7 +90,7 @@ namespace ResilienceDemo.Battery
                 new Context("Get meteo."));
             if (meteoPolicyResult.Outcome == OutcomeType.Successful)
             {
-                _battery.UseMeteo(meteoPolicyResult.Result);
+                _meteo = meteoPolicyResult.Result;
             }
             else
             {
@@ -94,6 +105,41 @@ namespace ResilienceDemo.Battery
             {
                 _console.Out.WriteLine(meteoPolicyResult.FinalException.Message);
             }
+        }
+
+        public async Task Assault(
+            double targetLatitude,
+            double targetLongitude,
+            double directionDeviation,
+            [Option] TimeoutPolicyKey timeoutPolicyKey = TimeoutPolicyKey.NoTimeout,
+            [Option] TimeoutPolicyKey correctionTimeoutPolicyKey = TimeoutPolicyKey.NoTimeout,
+            [Option] bool useCorrectionFallback = false)
+        {
+            var timeoutPolicy = _policyRegistry.Get<IAsyncPolicy>(timeoutPolicyKey.ToString());
+            var (horizontal, vertical) = GetAngles(targetLatitude, targetLongitude, directionDeviation);
+            
+            await timeoutPolicy.ExecuteAndCaptureAsync(
+                (context, token) => _battery.Aim(horizontal, vertical, token),
+                new Context("Battery aiming"),
+                CancellationToken.None // CancellationToken.None means we don't want independent cancellation control
+            );
+
+            await timeoutPolicy.ExecuteAndCaptureAsync(
+                (context, token) => _battery.Fire(token),
+                new Context("Battery firing"),
+                CancellationToken.None // CancellationToken.None means we don't want independent cancellation control
+            );
+            
+            
+
+        }
+
+        private (double Horizontal, double Vertical) GetAngles(
+            in double targetLatitude,
+            in double targetLongitude,
+            in double directionDeviation)
+        {
+            return (Math.Round(_faker.Random.Double(0, 360), 2), Math.Round(_faker.Random.Double(-3, 70), 2));
         }
 
         private async Task<AssaultCommand> ReportPosition(Coordinate coords)

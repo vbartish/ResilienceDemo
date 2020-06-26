@@ -17,6 +17,7 @@
     public enum TimeoutPolicyKey
     {
         NoTimeout, 
-        DefaultPessimisticTimeout
+        DefaultPessimisticTimeout,
+        DefaultOptimisticTimeout
     }
 }

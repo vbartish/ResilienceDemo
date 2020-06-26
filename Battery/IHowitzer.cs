@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Threading;
+using System.Threading.Tasks;
 
 namespace ResilienceDemo.Battery
 {
@@ -8,6 +9,18 @@ namespace ResilienceDemo.Battery
         
         bool IsOperational { get; }
 
+        bool AimingDone { get; }
+        
+        double Longitude { get; }
+
+        double Latitude { get; }
+
         Task<Howitzer> ToArms();
+        
+        void RePosition(in double latitude, in double longitude);
+
+        Task Aim(double angleHorizontal, double angleVertical, CancellationToken token);
+        
+        Task Fire(CancellationToken token);
     }
 }

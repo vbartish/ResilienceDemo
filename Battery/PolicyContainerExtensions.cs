@@ -122,6 +122,10 @@ namespace ResilienceDemo.Battery
                         console.Out.WriteLine($"Operation {context.OperationKey} timed out.");
                         return Task.CompletedTask;
                     })
+                },
+                {
+                    TimeoutPolicyKey.DefaultOptimisticTimeout.ToString(),
+                    Policy.TimeoutAsync(TimeSpan.FromMilliseconds(100), TimeoutStrategy.Optimistic)
                 }
             };
             

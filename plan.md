@@ -34,7 +34,7 @@
 1. show some visual or demo the problem
 2. improve previous demo by adding bulkhead to the service.
 
-## Timeout (on firing command do timeout for aiming)
+## Timeout (done)
 1. show some visual or demo the problem
 2. why use Polly, or custom implementation when you can use default timeouts on DB connections or service clients? 
 3. improve previous demo or show another endpoint usage with timeout

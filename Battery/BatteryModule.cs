@@ -22,7 +22,7 @@ namespace ResilienceDemo.Battery
                 var result = new List<IHowitzer>();
                 for (var howitzerId = 0; howitzerId < 6; howitzerId++)
                 {
-                    var howitzer = new Howitzer(howitzerId, console);
+                    var howitzer = new Howitzer(howitzerId);
                     result.Add(howitzer);
                 }
                 return result;
