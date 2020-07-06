@@ -38,9 +38,9 @@ namespace ResilienceDemo.Battery
         }
             
         public async Task ToArms(
-            [Option(ShortName = "r")] RetryPolicyKey retryPolicyKey = RetryPolicyKey.RetryOnRpcWithJitter,
-            [Option(ShortName = "c")] CachePolicyKey cachePolicyKey = CachePolicyKey.InMemoryCache,
-            [Option(ShortName = "t")] TimeoutPolicyKey timeoutPolicyKey = TimeoutPolicyKey.DefaultPessimisticTimeout,
+            [Option(ShortName = "r")] RetryPolicyKey retryPolicyKey = RetryPolicyKey.NoRetry,
+            [Option(ShortName = "c")] CachePolicyKey cachePolicyKey = CachePolicyKey.NoCache,
+            [Option(ShortName = "t")] TimeoutPolicyKey timeoutPolicyKey = TimeoutPolicyKey.NoTimeout,
             double? latitude = null, double? longitude = null)
         {
             var retryPolicy = _policyRegistry.Get<IAsyncPolicy>(retryPolicyKey.ToString());
@@ -50,8 +50,8 @@ namespace ResilienceDemo.Battery
             await _battery.ToArms(timeoutPolicyKey);
             var coords = new Coordinate(latitude ?? DefaultLatitude, longitude ?? DefaultLongitude);
             
-            var meteoTask = meteoPolicy.ExecuteAndCaptureAsync(_ => GetMeteo(coords), new Context("Get meteo."));
-            var registrationTask = retryPolicy.ExecuteAndCaptureAsync(_ => RegisterAsync(coords), new Context("Register unit."));
+            var meteoTask = meteoPolicy.ExecuteAndCaptureAsync(_ => GetMeteo(coords), new Context("Get meteo"));
+            var registrationTask = retryPolicy.ExecuteAndCaptureAsync(_ => RegisterAsync(coords), new Context("Register unit"));
             await Task.WhenAll(registrationTask, meteoTask);
 
             var registrationPolicyCapture = registrationTask.Result;
@@ -59,7 +59,7 @@ namespace ResilienceDemo.Battery
 
             if (registrationPolicyCapture.Outcome == OutcomeType.Failure)
             {
-                _console.Out.WriteLine(registrationPolicyCapture.FinalException.Message);
+                _console.Out.WriteLine($"Register unit failed: {registrationPolicyCapture.FinalException.Message}");
             }
             else
             {
@@ -68,15 +68,15 @@ namespace ResilienceDemo.Battery
             
             if (meteoPolicyCapture.Outcome == OutcomeType.Failure)
             {
-                _console.Out.WriteLine(meteoPolicyCapture.FinalException.Message);
+                _console.Out.WriteLine($"Get meteo failed: {meteoPolicyCapture.FinalException.Message}");
             }
         }
 
         public async Task RePosition(
             double latitude,
             double longitude,
-            [Option(ShortName = "r")] RetryPolicyKey retryPolicyKey = RetryPolicyKey.RetryOnRpcWithJitter,
-            [Option(ShortName = "c")] CachePolicyKey cachePolicyKey = CachePolicyKey.InMemoryCache)
+            [Option(ShortName = "r")] RetryPolicyKey retryPolicyKey = RetryPolicyKey.NoRetry,
+            [Option(ShortName = "c")] CachePolicyKey cachePolicyKey = CachePolicyKey.NoCache)
         {
             _battery.RePosition(latitude, longitude);
             
@@ -87,14 +87,14 @@ namespace ResilienceDemo.Battery
             var coords = new Coordinate(latitude, longitude);
             var meteoPolicyResult = await meteoPolicy.ExecuteAndCaptureAsync(
                 _ => GetMeteo(coords),
-                new Context("Get meteo."));
+                new Context("Get meteo"));
             if (meteoPolicyResult.Outcome == OutcomeType.Successful)
             {
                 _meteo = meteoPolicyResult.Result;
             }
             else
             {
-                _console.Out.WriteLine(meteoPolicyResult.FinalException.Message);
+                _console.Out.WriteLine($"Get meteo failed: {meteoPolicyResult.FinalException.Message}");
             }
             
             var inPositionPolicyResult = await retryPolicy.ExecuteAndCaptureAsync(
@@ -103,7 +103,7 @@ namespace ResilienceDemo.Battery
 
             if (inPositionPolicyResult.Outcome == OutcomeType.Failure)
             {
-                _console.Out.WriteLine(meteoPolicyResult.FinalException.Message);
+                _console.Out.WriteLine($"Re-position failed: {inPositionPolicyResult.FinalException.Message}");
             }
         }
 
@@ -111,8 +111,8 @@ namespace ResilienceDemo.Battery
             double targetLatitude,
             double targetLongitude,
             double directionDeviation,
-            [Option(ShortName = "t")] TimeoutPolicyKey timeoutPolicyKey = TimeoutPolicyKey.DefaultOptimisticTimeout,
-            [Option(ShortName = "c")] TimeoutPolicyKey correctionTimeoutPolicyKey = TimeoutPolicyKey.DefaultOptimisticTimeout)
+            [Option(ShortName = "t")] TimeoutPolicyKey timeoutPolicyKey = TimeoutPolicyKey.NoTimeout,
+            [Option(ShortName = "c")] TimeoutPolicyKey correctionTimeoutPolicyKey = TimeoutPolicyKey.NoTimeout)
         {
             
             var (horizontal, vertical) = GetAngles(targetLatitude, targetLongitude, directionDeviation);
@@ -136,7 +136,7 @@ namespace ResilienceDemo.Battery
                         {
                             Latitude = _battery.Latitude,
                             Longitude = _battery.Longitude
-                        }, deadline: DateTime.UtcNow.AddMilliseconds(100));
+                        }, deadline: DateTime.UtcNow.AddMilliseconds(1000));
 
                         _console.Out.WriteLine(
                             $"Assault command received. Target: lat: {assaultCommand.Position.Latitude}; lon:{assaultCommand.Position.Longitude}" +
@@ -152,7 +152,7 @@ namespace ResilienceDemo.Battery
 
             var policyWrap = Policy.WrapAsync(lastResortPolicy, correctionFallbackPolicy, correctionTimeoutPolicy);
 
-            await policyWrap.ExecuteAsync(async (token) =>
+            await policyWrap.ExecuteAsync(async token =>
                 {
                     var correction = await _client.GetCorrectionAsync(
                         new Position

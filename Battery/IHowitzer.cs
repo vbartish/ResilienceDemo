@@ -17,6 +17,8 @@ namespace ResilienceDemo.Battery
 
         int AmmunitionConsumption { get; }
 
+        void AssignToBattery(IBattery battery);
+
         Task<Howitzer> ToArms();
         
         void RePosition(in double latitude, in double longitude);

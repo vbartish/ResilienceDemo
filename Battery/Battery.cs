@@ -6,9 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using CommandDotNet;
 using CommandDotNet.Rendering;
-using Grpc.Core;
 using Polly;
-using Polly.CircuitBreaker;
 using Polly.Registry;
 
 namespace ResilienceDemo.Battery
@@ -24,6 +22,10 @@ namespace ResilienceDemo.Battery
             _console = console;
             _howitzers = howitzers;
             _policyRegistry = policyRegistry;
+            foreach (var howitzer in _howitzers)
+            {
+                howitzer.AssignToBattery(this);
+            }
         }
         
         public Guid Id { get; } = Guid.NewGuid();
@@ -31,6 +33,8 @@ namespace ResilienceDemo.Battery
         public double Longitude { get; private set; }
 
         public double Latitude { get; private set; }
+
+        public int HowitzersCount => _howitzers.Count;
 
         public async Task ToArms(TimeoutPolicyKey policyKey)
         {
@@ -102,17 +106,6 @@ namespace ResilienceDemo.Battery
             return Task.CompletedTask;
         }
 
-        public async Task BattleReport()
-        {
-            var fallbackPolicy = Policy
-                .Handle<BrokenCircuitException>()
-                .Or<RpcException>(e => e.Status.StatusCode == StatusCode.ResourceExhausted)
-                .FallbackAsync(async token =>
-                {
-                    _console.Out.WriteLine("Reporting service unavailable. Lets get a smoke.");
-                    await Task.CompletedTask;
-                });
-            await fallbackPolicy.ExecuteAsync(() => Task.WhenAll(_howitzers.Select(h => h.BattleReport())));
-        }
+        public Task BattleReport() => Task.WhenAll(_howitzers.Select(h => h.BattleReport()));
     }
 }

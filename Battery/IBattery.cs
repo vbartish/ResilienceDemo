@@ -13,6 +13,8 @@ namespace ResilienceDemo.Battery
         double Longitude { get; }
 
         double Latitude { get; }
+        
+        int HowitzersCount { get; }
 
         Task ToArms(TimeoutPolicyKey policyKey);
 

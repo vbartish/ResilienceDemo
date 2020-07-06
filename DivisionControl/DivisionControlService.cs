@@ -17,15 +17,38 @@ namespace ResilienceDemo.DivisionControl
     public class DivisionControlService : DivisionControlUnit.DivisionControlUnitBase, IGrpcService
     {
         private const int RegisterUnitSuccessEvery = 5;
-        private const int MeteoSuccessEvery = 3;
+        private const int MeteoSuccessEvery = 5;
         private static int _registerUnitCounter;
         private static int _meteoCounter;
+        private static readonly IAsyncPolicy<RePositionCommand> RegistrationLatency = MonkeyPolicy.InjectLatencyAsync<RePositionCommand>(
+            with =>
+            {
+                with
+                    .Latency(TimeSpan.FromSeconds(2))
+                    .InjectionRate(1)
+                    .EnabledWhen((_, __) => Task.FromResult(++_registerUnitCounter % RegisterUnitSuccessEvery != 0));
+            });
 
-        private readonly IAsyncPolicy _reportingBulkhead =
+        private static readonly IAsyncPolicy<Meteo> MeteoLatency = MonkeyPolicy.InjectLatencyAsync<Meteo>(
+            with =>
+            {
+                with
+                    .Latency(TimeSpan.FromSeconds(2))
+                    .InjectionRate(1)
+                    .EnabledWhen((_, __) => Task.FromResult(++_meteoCounter % MeteoSuccessEvery != 0));
+            });
+
+        private static readonly IAsyncPolicy ReportingBulkhead =
             Policy.BulkheadAsync(2, 1, async context =>
             {
                 Console.WriteLine("Bulkhead rejection happened");
             });
+
+        private static readonly IAsyncPolicy InPositionFaultPolicy =
+            MonkeyPolicy.InjectExceptionAsync(with =>
+                with.Fault(new RpcException(new Status(StatusCode.OutOfRange, "Targets are out of range.")))
+                    .InjectionRate(0.7)
+                    .Enabled());
         
         private readonly Faker _faker = new Faker();
 
@@ -35,16 +58,7 @@ namespace ResilienceDemo.DivisionControl
 
         public override Task<RePositionCommand> RegisterUnit(RegisterArtilleryUnitRequest request, ServerCallContext context)
         {
-            var latencyPolicy = MonkeyPolicy.InjectLatencyAsync<RePositionCommand>(
-                with =>
-                {
-                    with
-                        .Latency(TimeSpan.FromSeconds(2))
-                        .InjectionRate(1)
-                        .EnabledWhen((_, __) => Task.FromResult(++_registerUnitCounter % RegisterUnitSuccessEvery != 0));
-                });
-            
-            return latencyPolicy.ExecuteAsync(() =>
+            return RegistrationLatency.ExecuteAsync(() =>
             {
                 var boundaries = new CoordinateBoundaries(
                     request.Position.Latitude,
@@ -66,17 +80,7 @@ namespace ResilienceDemo.DivisionControl
 
         public override Task<Meteo> GetMeteo(Position position, ServerCallContext context)
         {
-            var latencyPolicy = MonkeyPolicy.InjectLatencyAsync<Meteo>(
-                with =>
-                {
-                    with
-                        .Latency(TimeSpan.FromSeconds(2))
-                        .InjectionRate(0.5)
-                        .Enabled()
-                        .EnabledWhen((_, __) => Task.FromResult(++_meteoCounter % MeteoSuccessEvery != 0));
-                });
-
-            return latencyPolicy.ExecuteAsync(
+            return MeteoLatency.ExecuteAsync(
                 () => Task.FromResult(new Meteo
                 {
                     Temperature = Math.Round(_faker.Random.Double(-15, 40), 2),
@@ -88,11 +92,6 @@ namespace ResilienceDemo.DivisionControl
 
         public override Task<AssaultCommand> InPosition(Position position, ServerCallContext context)
         {
-            var chaosPolicy = MonkeyPolicy.InjectExceptionAsync(with =>
-                with.Fault(new RpcException(new Status(StatusCode.OutOfRange, "Targets are out of range.")))
-                    .InjectionRate(0.7)
-                    .Enabled());
-
             var boundaries = new CoordinateBoundaries(
                 position.Latitude,
                 position.Longitude,
@@ -105,7 +104,7 @@ namespace ResilienceDemo.DivisionControl
                 4.2,
                 DistanceUnit.Kilometers);
 
-            return chaosPolicy.ExecuteAsync(
+            return InPositionFaultPolicy.ExecuteAsync(
                 () => Task.FromResult(new AssaultCommand
                 {
                     Position = new Position
@@ -126,9 +125,9 @@ namespace ResilienceDemo.DivisionControl
         {
             try
             {
-                await _reportingBulkhead.ExecuteAsync(async () => await Task.Delay(3000));
+                await ReportingBulkhead.ExecuteAsync(async () => await Task.Delay(3000));
             }
-            catch (BulkheadRejectedException e)
+            catch (BulkheadRejectedException)
             {
                 throw new RpcException(new Status(StatusCode.ResourceExhausted, "Bulkhead says hello."));
             }

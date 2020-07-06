@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Autofac;
 using CommandDotNet;
@@ -48,7 +49,7 @@ namespace ResilienceDemo.Battery
                     Policy
                         .Handle<RpcException>()
                         .WaitAndRetryAsync(Backoff.ExponentialBackoff(
-                            TimeSpan.FromMilliseconds(100),
+                            TimeSpan.FromSeconds(1),
                             MaxRetries), (exception, timeSpan, retryAttempt, context) =>
                         {
                             console.Out.WriteLine(
@@ -60,14 +61,23 @@ namespace ResilienceDemo.Battery
                     RetryPolicyKey.RetryOnRpcWithJitter.ToString(),
                     Policy
                         .Handle<RpcException>()
-                        .WaitAndRetryAsync(Backoff.DecorrelatedJitterBackoffV2(
-                            TimeSpan.FromMilliseconds(100),
-                            MaxRetries), (exception, timeSpan, retryAttempt, context) =>
-                        {
-                            console.Out.WriteLine(
-                                $"Operation: {context.OperationKey}; TimeSpan: {timeSpan.ToString()}. Attempt {retryAttempt - 1} failed: {exception.Message}. Retrying.");
-                            return Task.CompletedTask;
-                        })
+                        .WaitAndRetryAsync(MaxRetries,
+                            retryAttempt =>
+                            {
+                                var backoffSpans =
+                                    Backoff
+                                        .DecorrelatedJitterBackoffV2(
+                                            TimeSpan.FromSeconds(1),
+                                            MaxRetries)
+                                        .ToList();
+                                return backoffSpans[retryAttempt - 1];
+                            },
+                            (exception, timeSpan, retryAttempt, context) =>
+                            {
+                                console.Out.WriteLine(
+                                    $"Operation: {context.OperationKey}; TimeSpan: {timeSpan.ToString()}. Attempt {retryAttempt - 1} failed: {exception.Message}. Retrying.");
+                                return Task.CompletedTask;
+                            })
                 },
                 {
                     CachePolicyKey.InMemoryCache.ToString(),
@@ -114,6 +124,8 @@ namespace ResilienceDemo.Battery
                             else
                             {
                                 // extra logic (if desired) for tasks which complete, despite the caller having 'walked away' earlier due to timeout.
+                                console.Out.WriteLine(
+                                    $"Operation {context.OperationKey}: execution timed out after {span.TotalSeconds} seconds, task completed.");
                             }
 
                             // Additionally, clean up any resources ...
@@ -125,7 +137,30 @@ namespace ResilienceDemo.Battery
                 },
                 {
                     TimeoutPolicyKey.DefaultOptimisticTimeout.ToString(),
-                    Policy.TimeoutAsync(TimeSpan.FromMilliseconds(500), TimeoutStrategy.Optimistic)
+                    Policy.TimeoutAsync(TimeSpan.FromMilliseconds(500), TimeoutStrategy.Optimistic,
+                        (context, span, abandonedTask) =>
+                        {
+                            console.Out.WriteLine($"Operation: {context.OperationKey}, timeout after {span}. ");
+                            abandonedTask.ContinueWith(t =>
+                            {
+                                if (t.IsFaulted)
+                                {
+                                    console.Out.WriteLine(
+                                        $"Operation {context.OperationKey}: execution timed out after {span.TotalSeconds} seconds, eventually terminated with: {t.Exception}.");
+                                }
+                                else if (t.IsCanceled)
+                                {
+                                    console.Out.WriteLine(
+                                        $"Operation {context.OperationKey}: execution timed out after {span.TotalSeconds} seconds, task cancelled.");
+                                }
+                                else
+                                {
+                                    console.Out.WriteLine(
+                                        $"Operation {context.OperationKey}: execution timed out after {span.TotalSeconds} seconds, task completed.");
+                                }
+                            });
+                            return Task.CompletedTask;
+                        })
                 },
                 {
                     CircuitBreakerPolicyKey.NoBreaker.ToString(),
@@ -136,15 +171,18 @@ namespace ResilienceDemo.Battery
                     Policy
                         .Handle<RpcException>()
                         .CircuitBreakerAsync(
-                            1,
-                            TimeSpan.FromMilliseconds(50),
+                            2,
+                            TimeSpan.FromSeconds(2),
                             (exception, span) =>
                             {
-                                console.WriteLine("Circuit breaker in action.");
+                                console.WriteLine($"Circuit broken. Span: {span}; Exception: {exception.Message};");
                             },
                             () =>
                             {
-                                console.WriteLine("Circuit breaker reset.");
+                                console.WriteLine("Circuit reset.");
+                            }, () =>
+                            {
+                                console.WriteLine("Circuit half openBa.");
                             })
                 },
             };
