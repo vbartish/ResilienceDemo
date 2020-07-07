@@ -111,7 +111,7 @@ namespace ResilienceDemo.Battery
                             if (t.IsFaulted)
                             {
                                 console.Out.WriteLine(
-                                    $"Operation {context.OperationKey}: execution timed out after {span.TotalSeconds} seconds, eventually terminated with: {t.Exception}.");
+                                    $"Operation {context.OperationKey}: execution timed out after {span.TotalSeconds} seconds, eventually terminated with: {t.Exception.Message}.");
                             }
                             else if (t.IsCanceled)
                             {
@@ -146,7 +146,7 @@ namespace ResilienceDemo.Battery
                                 if (t.IsFaulted)
                                 {
                                     console.Out.WriteLine(
-                                        $"Operation {context.OperationKey}: execution timed out after {span.TotalSeconds} seconds, eventually terminated with: {t.Exception}.");
+                                        $"Operation {context.OperationKey}: execution timed out after {span.TotalSeconds} seconds, eventually terminated with: {t.Exception.Message}.");
                                 }
                                 else if (t.IsCanceled)
                                 {

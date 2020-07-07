@@ -10,6 +10,7 @@ using GrpcDivisionControlUnit;
 using Polly;
 using Polly.Registry;
 using Polly.Retry;
+using Polly.Timeout;
 
 namespace ResilienceDemo.Battery
 {
@@ -123,6 +124,7 @@ namespace ResilienceDemo.Battery
             var correctionTimeoutPolicy = _policyRegistry.Get<IAsyncPolicy>(correctionTimeoutPolicyKey.ToString());
             var correctionFallbackPolicy = Policy
                 .Handle<RpcException>()
+                .Or<TimeoutRejectedException>()
                 .FallbackAsync(
                     async token =>
                     {
@@ -144,11 +146,14 @@ namespace ResilienceDemo.Battery
                     },
                     async exception =>
                     {
-                        _console.Out.WriteLine("Could not get correction, falling back to new position.");
+                        _console.Out.WriteLine($"Could not get correction, falling back to new position. Exception: {exception.Message}");
                         await Task.CompletedTask;
                     });
 
-            var lastResortPolicy = Policy.Handle<RpcException>().FallbackAsync(token => _battery.Disengage());
+            var lastResortPolicy = Policy
+                .Handle<RpcException>()
+                .Or<TimeoutRejectedException>()
+                .FallbackAsync(token => _battery.Disengage());
 
             var policyWrap = Policy.WrapAsync(lastResortPolicy, correctionFallbackPolicy, correctionTimeoutPolicy);
 
@@ -161,6 +166,8 @@ namespace ResilienceDemo.Battery
                             Longitude = _battery.Longitude
                         },
                         cancellationToken: token);
+
+                    token.ThrowIfCancellationRequested();
 
                     _console.Out.WriteLine(
                         $"Assault command correction received. Target: lat: {correction.Position.Latitude}; lon:{correction.Position.Longitude}" +

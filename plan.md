@@ -9,44 +9,34 @@
 3. Resiliency could and should be a concern an all "levels" of the software system. You should build your infrastructure, your back-end services and apps and user-facing apps with resiliency in mind.
 4. Today we will talk about application resiliency. So let's leave infrastructure aside. We will focus on .Net Core however almost everything will still be applicable for .Net Framework. We will focus on back-end implementations, however same principles are applicable for almost any kind of application.
 
-# Reactive resiliency patterns
+## Retry
+1. basic approach - simple retry with Polly. Show a problem with it. 
+2. improved approach - retry with back-off. Show polly example. Describe a potential problem.
+3. advanced approach - retry with jitter.
+ 
+## Timeout
+1. why use Polly, or custom implementation when you can use default timeouts on DB connections or service clients? 
+2. improve previous demo or show another endpoint usage with timeout
 
-## Retry (done)
-1. show some visual or demo the problem 
-2. basic approach - simple retry with Polly. Show a problem with it. 
-3. improved approach - retry with back-off. Show polly example. Describe a potential problem.
-4. advanced approach - retry with jitter. 
+## Cache
+1. why Polly?
+2. Distributed cache?
 
-## Circuit Breaker (use on client when bulkhead is on server)
-1. show some visual or demo the problem
-2. basic approach - simple circuit breaker with Polly
-3. improve previous demo by wrapping retry policy with circuit breaker
-4. distributed breaker?
-
-## Fall back (done)
+## Fall back 
 1. show some visual or demo the problem
 2. improve previous demo by adding a fallback policy
 
-# Proactive resiliency patterns
+## Circuit Breaker (use on client when bulkhead is on server)
+1. basic approach - simple circuit breaker with Polly
+2. distributed breaker?
 
 ## Bulkhead (use on client when circuit breaker is on server)
 
 1. show some visual or demo the problem
 2. improve previous demo by adding bulkhead to the service.
 
-## Timeout (done)
-1. show some visual or demo the problem
-2. why use Polly, or custom implementation when you can use default timeouts on DB connections or service clients? 
-3. improve previous demo or show another endpoint usage with timeout
-
-## Cache (done)
-1. show some visual or demo the problem
-2. why Polly?
-3. Distributed cache? 
-
-# Testing resiliency (done)
-1. NoOp policy? 
-2. Simmy?
+# Testing resiliency
+1. Simmy
 
 
 

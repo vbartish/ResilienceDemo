@@ -17,9 +17,13 @@ namespace ResilienceDemo.DivisionControl
     public class DivisionControlService : DivisionControlUnit.DivisionControlUnitBase, IGrpcService
     {
         private const int RegisterUnitSuccessEvery = 5;
+        
         private const int MeteoSuccessEvery = 5;
+        
         private static int _registerUnitCounter;
+        
         private static int _meteoCounter;
+        
         private static readonly IAsyncPolicy<RePositionCommand> RegistrationLatency = MonkeyPolicy.InjectLatencyAsync<RePositionCommand>(
             with =>
             {
@@ -116,8 +120,9 @@ namespace ResilienceDemo.DivisionControl
                 }));
         }
 
-        public override Task<AssaultCommand> GetCorrection(Position request, ServerCallContext context)
+        public override async Task<AssaultCommand> GetCorrection(Position request, ServerCallContext context)
         {
+            await Task.Delay(1000);
             throw new RpcException(new Status(StatusCode.Unavailable, "Correction is unavailable"));
         }
 
