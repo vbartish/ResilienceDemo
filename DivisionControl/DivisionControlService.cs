@@ -43,9 +43,9 @@ namespace ResilienceDemo.DivisionControl
             });
 
         private static readonly IAsyncPolicy ReportingBulkhead =
-            Policy.BulkheadAsync(2, 1, async context =>
-            {
+            Policy.BulkheadAsync(2, 1, context => {
                 Console.WriteLine("Bulkhead rejection happened");
+                return Task.CompletedTask;
             });
 
         private static readonly IAsyncPolicy InPositionFaultPolicy =

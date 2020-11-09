@@ -182,7 +182,7 @@ namespace ResilienceDemo.Battery
                                 console.WriteLine("Circuit reset.");
                             }, () =>
                             {
-                                console.WriteLine("Circuit half openBa.");
+                                console.WriteLine("Circuit half open.");
                             })
                 },
             };

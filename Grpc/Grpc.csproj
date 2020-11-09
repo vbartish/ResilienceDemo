@@ -17,11 +17,6 @@
       <PackageReference Include="Microsoft.Extensions.Hosting" Version="3.1.5" />
       <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="3.1.5" />
     </ItemGroup>
-    <ItemGroup>
-      <Reference Include="Autofac, Version=5.2.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da">
-        <HintPath>..\..\..\..\..\.nuget\packages\autofac\5.2.0\lib\netstandard2.1\Autofac.dll</HintPath>
-      </Reference>
-    </ItemGroup>
 
     <Target Name="Protobuf_Clean" Condition=" '@(Protobuf)' != '' " />
 </Project>
