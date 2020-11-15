@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Autofac;
 using CommandDotNet;
 using CommandDotNet.Rendering;
 using Grpc.Core;
+using Microsoft.Extensions.DependencyInjection;
 using Polly;
 using Polly.Caching;
 using Polly.Contrib.WaitAndRetry;
@@ -17,17 +17,18 @@ namespace ResilienceDemo.Battery
     {
         private const int MaxRetries = 5;
 
-        public static void AddDefaultPolicies(this ContainerBuilder builder)
+        public static void AddDefaultPolicies(this ServiceCollection serviceCollection)
         {
-            builder
-                .Register(GetDefaultRegistry)
-                .As<IReadOnlyPolicyRegistry<string>>()
-                .SingleInstance();
+            serviceCollection
+                .AddSingleton<IReadOnlyPolicyRegistry<string>>(provider =>
+                {
+                    return GetDefaultRegistry(provider);
+                });
         }
 
-        private static PolicyRegistry GetDefaultRegistry(IComponentContext componentContext)
+        private static PolicyRegistry GetDefaultRegistry(IServiceProvider provider)
         {
-            var console = componentContext.Resolve<IConsole>();
+            var console = provider.GetService<IConsole>();
             var policyRegistry = new PolicyRegistry
             {
                 {
@@ -38,6 +39,7 @@ namespace ResilienceDemo.Battery
                     RetryPolicyKey.BasicRetryOnRpc.ToString(),
                     Policy
                         .Handle<RpcException>()
+                        .Or<TimeoutRejectedException>()
                         .RetryAsync(MaxRetries, (exception, retryAttempt, context) =>
                         {
                             console.Out.WriteLine($"Operation: {context.OperationKey}; Attempt {retryAttempt - 1} failed: {exception.Message}. Retrying.");
@@ -83,7 +85,7 @@ namespace ResilienceDemo.Battery
                     CachePolicyKey.InMemoryCache.ToString(),
                     Policy
                         .CacheAsync(
-                        componentContext.Resolve<IAsyncCacheProvider>(),
+                        provider.GetService<IAsyncCacheProvider>(),
                         TimeSpan.FromMinutes(5),
                         (policyContext, cacheKey) => console.WriteLine($"Operation {policyContext.OperationKey}: Cache get {cacheKey}"),
                         (policyContext, cacheKey) => console.WriteLine($"Operation {policyContext.OperationKey}: Cache miss {cacheKey}"),

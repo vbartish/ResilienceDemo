@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using Geolocation;
 using Google.Protobuf.Reflection;
 using Grpc.Core;
-using GrpcContract;
 using GrpcDivisionControlUnit;
 using Polly.Contrib.Simmy;
 using Polly.Contrib.Simmy.Latency;
@@ -14,7 +13,7 @@ using Polly.Contrib.Simmy.Outcomes;
 
 namespace ResilienceDemo.DivisionControl
 {
-    public class DivisionControlService : DivisionControlUnit.DivisionControlUnitBase, IGrpcService
+    public class DivisionControlService : DivisionControlUnit.DivisionControlUnitBase
     {
         private const int RegisterUnitSuccessEvery = 5;
         
@@ -55,10 +54,6 @@ namespace ResilienceDemo.DivisionControl
                     .Enabled());
         
         private readonly Faker _faker = new Faker();
-
-        public ServerServiceDefinition BindService() => DivisionControlUnit.BindService(this);
-
-        ServiceDescriptor IGrpcService.Descriptor => DivisionControlUnit.Descriptor;
 
         public override Task<RePositionCommand> RegisterUnit(RegisterArtilleryUnitRequest request, ServerCallContext context)
         {

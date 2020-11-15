@@ -8,8 +8,6 @@
         <Protobuf Include="../**/*.proto" OutputDir="%(RelativeDir)" CompileOutputs="true" />
     </ItemGroup>
     <ItemGroup>
-      <PackageReference Include="Autofac" Version="5.2.0" />
-      <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="6.0.0" />
       <PackageReference Include="Google.Protobuf" Version="3.12.3" />
       <PackageReference Include="Grpc.Core" Version="2.29.0" />
       <PackageReference Include="Grpc.Reflection" Version="2.29.0" />
