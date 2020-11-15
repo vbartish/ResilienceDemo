@@ -64,8 +64,7 @@ namespace ResilienceDemo.Battery
 
         public void AssignToBattery(IBattery battery)
         {
-            if (battery == null) throw new ArgumentNullException(nameof(battery));
-            _battery = battery;
+            _battery = battery ?? throw new ArgumentNullException(nameof(battery));
         }
 
         public async Task<Howitzer> ToArms()

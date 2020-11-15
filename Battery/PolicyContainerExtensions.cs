@@ -17,13 +17,14 @@ namespace ResilienceDemo.Battery
     {
         private const int MaxRetries = 5;
 
-        public static void AddDefaultPolicies(this ServiceCollection serviceCollection)
+        public static IServiceCollection AddDefaultPolicies(this IServiceCollection serviceCollection)
         {
             serviceCollection
                 .AddSingleton<IReadOnlyPolicyRegistry<string>>(provider =>
                 {
                     return GetDefaultRegistry(provider);
                 });
+            return serviceCollection;
         }
 
         private static PolicyRegistry GetDefaultRegistry(IServiceProvider provider)
