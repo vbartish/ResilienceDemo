@@ -1,10 +1,8 @@
-﻿using CommandDotNet;
-using CommandDotNet.Rendering;
+﻿using CommandDotNet.Rendering;
 using Grpc.Core;
 using Grpc.Core.Interceptors;
 using Polly;
 using Polly.Registry;
-using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,7 +14,7 @@ namespace ResilienceDemo.Battery
         private IReadOnlyPolicyRegistry<string> _policyRegistry;
         private readonly IConsole console;
 
-        public ResiliencyInterceptor(IReadOnlyPolicyRegistry<string> policyRegistry, CommandDotNet.Rendering.IConsole console)
+        public ResiliencyInterceptor(IReadOnlyPolicyRegistry<string> policyRegistry, IConsole console)
         {
             _policyRegistry = policyRegistry;
             this.console = console;
@@ -55,7 +53,6 @@ namespace ResilienceDemo.Battery
                     {
                         if (cancel.Token.IsCancellationRequested)
                         {
-                            console.WriteLine("Whoa, cancellatioN!");
                             throw new RpcException(Status.DefaultCancelled);
                         }
 
@@ -71,7 +68,7 @@ namespace ResilienceDemo.Battery
                             context.Host,
                             new CallOptions(
                                 newMetadata,
-                                DateTime.UtcNow.AddSeconds(1),
+                                Defaults.DefaultGrpcDeadline,
                                 context.Options.CancellationToken,
                                 context.Options.WriteOptions,
                                 context.Options.PropagationToken,
@@ -80,7 +77,6 @@ namespace ResilienceDemo.Battery
                         var asyncCall = continuation(request, newContext);
                         cancel.Token.Register(() =>
                         {
-                            console.WriteLine("Whoa, cancellatioN!");
                             asyncCall.Dispose();
                         });
 

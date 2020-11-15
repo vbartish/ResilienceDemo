@@ -9,15 +9,12 @@ using Grpc.Core;
 using GrpcDivisionControlUnit;
 using Polly;
 using Polly.Registry;
-using Polly.Retry;
 using Polly.Timeout;
 
 namespace ResilienceDemo.Battery
 {
     public class SeniorBatteryOfficer
     {
-        private const double DefaultLatitude = 50.014495;
-        private const double DefaultLongitude = 23.730392;
         private readonly DivisionControlUnit.DivisionControlUnitClient _client;
         private readonly Faker _faker = new Faker();
         private readonly IBattery _battery;
@@ -45,7 +42,7 @@ namespace ResilienceDemo.Battery
             double? latitude = null, double? longitude = null)
         {
             await _battery.ToArms(timeoutPolicyKey);
-            var coords = new Coordinate(latitude ?? DefaultLatitude, longitude ?? DefaultLongitude);
+            var coords = new Coordinate(latitude ?? Defaults.DefaultLatitude, longitude ?? Defaults.DefaultLongitude);
             var meteoTask = GetMeteo(coords, cachePolicyKey, retryPolicyKey)
                 .ContinueWith(resultingTask => GetMeteoResultOutput(resultingTask, coords));
             var registrationTask = RegisterAsync(coords, retryPolicyKey)
@@ -114,7 +111,7 @@ namespace ResilienceDemo.Battery
         {
             var (horizontal, vertical) = GetAngles(targetLatitude, targetLongitude, _mainFiringDirection + directionDeviation, _meteo);
             await _battery.Aim(horizontal, vertical, timeoutPolicyKey);
-            await _battery.Fire(40, timeoutPolicyKey);
+            await _battery.Fire(Defaults.DefaultAssaultDensity, timeoutPolicyKey);
 
             var correctionTimeoutPolicy = _policyRegistry.Get<IAsyncPolicy>(correctionTimeoutPolicyKey.ToString());
             var correctionFallbackPolicy = Policy
@@ -156,7 +153,7 @@ namespace ResilienceDemo.Battery
                     Latitude = _battery.Latitude,
                     Longitude = _battery.Longitude
                 }, new CallOptions()
-                .WithDeadline(DateTime.UtcNow.AddSeconds(1))
+                .WithDeadline(Defaults.DefaultGrpcDeadline)
                 .WithCancellationToken(token));
 
                 _console.Out.WriteLine(
@@ -174,7 +171,8 @@ namespace ResilienceDemo.Battery
             in double targetLatitude,
             in double targetLongitude,
             in double directionDeviation,
-            Meteo _meteo) => (Math.Round(_faker.Random.Double(0, 360), 2), Math.Round(_faker.Random.Double(-3, 70), 2));
+            Meteo _meteo) => (Math.Round(_faker.Random.Double(Defaults.MinHorizontalAngle, Defaults.MaxHorizontalAngle), Defaults.RoundingPrecision),
+            Math.Round(_faker.Random.Double(Defaults.MinVerticalAngle, Defaults.MaxVerticalAngle), Defaults.RoundingPrecision));
         }
 
         public async Task BattleReport()
