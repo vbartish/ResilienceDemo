@@ -18,8 +18,9 @@ namespace ResilienceDemo.Battery
         {
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddGrpcClient<DivisionControlUnit.DivisionControlUnitClient>(
-                configOptions => configOptions.Address = new Uri("http://localhost:5000"));
-                
+                configOptions => configOptions.Address = new Uri("http://localhost:5000"))
+                .AddInterceptor<ResiliencyInterceptor>();
+            serviceCollection.AddTransient<ResiliencyInterceptor>();
             serviceCollection.AddMemoryCache();
             serviceCollection.AddSingleton<IAsyncCacheProvider, MemoryCacheProvider>();
             serviceCollection.AddTransient<IConsole, SystemConsole>();

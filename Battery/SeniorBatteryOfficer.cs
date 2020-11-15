@@ -44,32 +44,31 @@ namespace ResilienceDemo.Battery
             [Option(ShortName = "t")] TimeoutPolicyKey timeoutPolicyKey = TimeoutPolicyKey.NoTimeout,
             double? latitude = null, double? longitude = null)
         {
-            var retryPolicy = _policyRegistry.Get<IAsyncPolicy>(retryPolicyKey.ToString());
-            var cachePolicy = _policyRegistry.Get<IAsyncPolicy>(cachePolicyKey.ToString());
-            var meteoPolicy = Policy.WrapAsync(cachePolicy, retryPolicy);
-            
             await _battery.ToArms(timeoutPolicyKey);
             var coords = new Coordinate(latitude ?? DefaultLatitude, longitude ?? DefaultLongitude);
-            
-            var meteoTask = meteoPolicy.ExecuteAndCaptureAsync(_ => GetMeteo(coords), new Context("Get meteo"));
-            var registrationTask = retryPolicy.ExecuteAndCaptureAsync(_ => RegisterAsync(coords), new Context("Register unit"));
+            var meteoTask = GetMeteo(coords, cachePolicyKey, retryPolicyKey)
+                .ContinueWith(resultingTask => GetMeteoResultOutput(resultingTask, coords));
+            var registrationTask = RegisterAsync(coords, retryPolicyKey)
+                .ContinueWith(RegistrationResultOutput);
             await Task.WhenAll(registrationTask, meteoTask);
 
-            var registrationPolicyCapture = registrationTask.Result;
-            var meteoPolicyCapture = meteoTask.Result;
+            void RegistrationResultOutput(Task<RePositionCommand> resultingTask)
+            {
+                if (resultingTask.IsFaulted)
+                {
+                    _console.Out.WriteLine($"Register unit failed: {resultingTask.Exception.Message}.");
+                    return;
+                }
 
-            if (registrationPolicyCapture.Outcome == OutcomeType.Failure)
-            {
-                _console.Out.WriteLine($"Register unit failed: {registrationPolicyCapture.FinalException.Message}");
-            }
-            else
-            {
-                _mainFiringDirection = registrationPolicyCapture.Result.MainFiringDirection;
-            }
-            
-            if (meteoPolicyCapture.Outcome == OutcomeType.Failure)
-            {
-                _console.Out.WriteLine($"Get meteo failed: {meteoPolicyCapture.FinalException.Message}");
+                if (resultingTask.IsCanceled)
+                {
+                    _console.Out.WriteLine($"Register unit cancelled.");
+                    return;
+                }
+
+                _console.Out.WriteLine($"Unit {_battery.Id} reported for duty. Re-position command: " +
+                               $"lat: {resultingTask.Result.Position.Latitude}; lon: {resultingTask.Result.Position.Longitude}; " +
+                               $"direction: {resultingTask.Result.MainFiringDirection}.");
             }
         }
 
@@ -81,30 +80,28 @@ namespace ResilienceDemo.Battery
         {
             _battery.RePosition(latitude, longitude);
             
-            var retryPolicy = _policyRegistry.Get<IAsyncPolicy>(retryPolicyKey.ToString());
-            var cachePolicy = _policyRegistry.Get<IAsyncPolicy>(cachePolicyKey.ToString());
-            var meteoPolicy = Policy.WrapAsync(cachePolicy, retryPolicy);
-            
             var coords = new Coordinate(latitude, longitude);
-            var meteoPolicyResult = await meteoPolicy.ExecuteAndCaptureAsync(
-                _ => GetMeteo(coords),
-                new Context("Get meteo"));
-            if (meteoPolicyResult.Outcome == OutcomeType.Successful)
-            {
-                _meteo = meteoPolicyResult.Result;
-            }
-            else
-            {
-                _console.Out.WriteLine($"Get meteo failed: {meteoPolicyResult.FinalException.Message}");
-            }
-            
-            var inPositionPolicyResult = await retryPolicy.ExecuteAndCaptureAsync(
-                _ => ReportPosition(coords),
-                new Context("In position."));
+            await GetMeteo(coords, cachePolicyKey, retryPolicyKey)
+                .ContinueWith(resultingTask => GetMeteoResultOutput(resultingTask, coords));
+            await ReportPosition(coords, retryPolicyKey)
+                .ContinueWith(PositionReportingResultOutput);
 
-            if (inPositionPolicyResult.Outcome == OutcomeType.Failure)
+            void PositionReportingResultOutput(Task<AssaultCommand> resultingTask)
             {
-                _console.Out.WriteLine($"Re-position failed: {inPositionPolicyResult.FinalException.Message}");
+                if (resultingTask.IsFaulted)
+                {
+                    _console.Out.WriteLine($"Re-position failed: {resultingTask.Exception.Message}");
+                    return;
+                }
+
+                if (resultingTask.IsCanceled)
+                {
+                    _console.Out.WriteLine($"Re-position cancelled.");
+                    return;
+                }
+
+                _console.Out.WriteLine($"Assault command received. Target: lat: {resultingTask.Result.Position.Latitude};" +
+                    $" lon:{resultingTask.Result.Position.Longitude} direction: {resultingTask.Result.DirectionDeviation};");
             }
         }
 
@@ -115,9 +112,7 @@ namespace ResilienceDemo.Battery
             [Option(ShortName = "t")] TimeoutPolicyKey timeoutPolicyKey = TimeoutPolicyKey.NoTimeout,
             [Option(ShortName = "c")] TimeoutPolicyKey correctionTimeoutPolicyKey = TimeoutPolicyKey.NoTimeout)
         {
-            
-            var (horizontal, vertical) = GetAngles(targetLatitude, targetLongitude, directionDeviation);
-            
+            var (horizontal, vertical) = GetAngles(targetLatitude, targetLongitude, _mainFiringDirection + directionDeviation, _meteo);
             await _battery.Aim(horizontal, vertical, timeoutPolicyKey);
             await _battery.Fire(40, timeoutPolicyKey);
 
@@ -125,55 +120,61 @@ namespace ResilienceDemo.Battery
             var correctionFallbackPolicy = Policy
                 .Handle<RpcException>()
                 .Or<TimeoutRejectedException>()
-                .FallbackAsync(
-                    async token =>
-                    {
-                        var coordBoundaries = new CoordinateBoundaries(_battery.Latitude, _battery.Longitude, 2,
-                            DistanceUnit.Kilometers);
-                        _battery.RePosition(
-                            _faker.Random.Double(coordBoundaries.MinLatitude, coordBoundaries.MaxLatitude),
-                            _faker.Random.Double(coordBoundaries.MinLongitude, coordBoundaries.MaxLongitude)
-                        );
-                        var assaultCommand = await _client.InPositionAsync(new Position
-                        {
-                            Latitude = _battery.Latitude,
-                            Longitude = _battery.Longitude
-                        }, deadline: DateTime.UtcNow.AddMilliseconds(1000));
-
-                        _console.Out.WriteLine(
-                            $"Assault command received. Target: lat: {assaultCommand.Position.Latitude}; lon:{assaultCommand.Position.Longitude}" +
-                            $" direction: {assaultCommand.DirectionDeviation};");
-                    },
-                    async exception =>
-                    {
-                        _console.Out.WriteLine($"Could not get correction, falling back to new position. Exception: {exception.Message}");
-                        await Task.CompletedTask;
-                    });
-
+                .FallbackAsync(CorrectionFallbackAction, exception => OnCorrectionFallback(exception));
             var lastResortPolicy = Policy
                 .Handle<RpcException>()
                 .Or<TimeoutRejectedException>()
                 .FallbackAsync(token => _battery.Disengage());
-
             var policyWrap = Policy.WrapAsync(lastResortPolicy, correctionFallbackPolicy, correctionTimeoutPolicy);
 
-            await policyWrap.ExecuteAsync(async token =>
+            await policyWrap.ExecuteAsync(CorrectionAction, CancellationToken.None);
+
+            async Task CorrectionAction(CancellationToken token)
+            {
+                var correction = await _client.GetCorrectionAsync(
+                    new Position
+                    {
+                        Latitude = _battery.Latitude,
+                        Longitude = _battery.Longitude
+                    }, new CallOptions().WithCancellationToken(token));
+
+                _console.Out.WriteLine(
+                    $"Assault command correction received. Target: lat: {correction.Position.Latitude}; lon:{correction.Position.Longitude}" +
+                    $" direction: {correction.DirectionDeviation};");
+            };
+
+            async Task CorrectionFallbackAction(CancellationToken token)
+            {
+                var coordBoundaries = new CoordinateBoundaries(_battery.Latitude, _battery.Longitude, 2,
+                    DistanceUnit.Kilometers);
+                _battery.RePosition(
+                    _faker.Random.Double(coordBoundaries.MinLatitude, coordBoundaries.MaxLatitude),
+                    _faker.Random.Double(coordBoundaries.MinLongitude, coordBoundaries.MaxLongitude)
+                );
+                var assaultCommand = await _client.InPositionAsync(new Position
                 {
-                    var correction = await _client.GetCorrectionAsync(
-                        new Position
-                        {
-                            Latitude = _battery.Latitude,
-                            Longitude = _battery.Longitude
-                        },
-                        cancellationToken: token);
+                    Latitude = _battery.Latitude,
+                    Longitude = _battery.Longitude
+                }, new CallOptions()
+                .WithDeadline(DateTime.UtcNow.AddSeconds(1))
+                .WithCancellationToken(token));
 
-                    token.ThrowIfCancellationRequested();
+                _console.Out.WriteLine(
+                    $"Assault command received. Target: lat: {assaultCommand.Position.Latitude}; lon:{assaultCommand.Position.Longitude}" +
+                    $" direction: {assaultCommand.DirectionDeviation};");
+            };
 
-                    _console.Out.WriteLine(
-                        $"Assault command correction received. Target: lat: {correction.Position.Latitude}; lon:{correction.Position.Longitude}" +
-                        $" direction: {correction.DirectionDeviation};");
-                },
-                CancellationToken.None);
+            async Task OnCorrectionFallback(Exception exception)
+            {
+                _console.Out.WriteLine($"Could not get correction, falling back to new position. Exception: {exception.Message}");
+                await Task.CompletedTask;
+            }
+
+            (double Horizontal, double Vertical) GetAngles(
+            in double targetLatitude,
+            in double targetLongitude,
+            in double directionDeviation,
+            Meteo _meteo) => (Math.Round(_faker.Random.Double(0, 360), 2), Math.Round(_faker.Random.Double(-3, 70), 2));
         }
 
         public async Task BattleReport()
@@ -181,42 +182,31 @@ namespace ResilienceDemo.Battery
             await _battery.BattleReport();
         }
 
-        private (double Horizontal, double Vertical) GetAngles(
-            in double targetLatitude,
-            in double targetLongitude,
-            in double directionDeviation)
-        {
-            return (Math.Round(_faker.Random.Double(0, 360), 2), Math.Round(_faker.Random.Double(-3, 70), 2));
-        }
+        private async Task<AssaultCommand> ReportPosition(Coordinate coords, RetryPolicyKey retryPolicyKey) =>
+            await _client.InPositionAsync(new Position
+            {
+                Latitude = coords.Latitude,
+                Longitude = coords.Longitude
+            }, new CallOptions()
+            .WithHeaders(new Metadata
+            {
+                { HeaderKeys.Policies, retryPolicyKey.ToString() },
+                { HeaderKeys.OperationKey, "In position." }
+            }));
 
-        private async Task<AssaultCommand> ReportPosition(Coordinate coords)
-        {
-            var assaultCommand = await _client.InPositionAsync(new Position
-                               {
-                                   Latitude = coords.Latitude,
-                                   Longitude = coords.Longitude
-                               }, deadline: DateTime.UtcNow.AddMilliseconds(100));
-            
-            _console.Out.WriteLine($"Assault command received. Target: lat: {assaultCommand.Position.Latitude}; lon:{assaultCommand.Position.Longitude}" +
-                                   $" direction: {assaultCommand.DirectionDeviation};");
-            return assaultCommand;
-        }
-
-        private async Task<Meteo> GetMeteo(Coordinate coordinate)
-        {
-            var response = await _client.GetMeteoAsync(new Position
+        private async Task<Meteo> GetMeteo(Coordinate coordinate, CachePolicyKey cachePolicyKey = CachePolicyKey.NoCache, RetryPolicyKey retryPolicyKey = RetryPolicyKey.NoRetry) =>
+            _meteo = await _client.GetMeteoAsync(new Position
             {
                 Latitude = coordinate.Latitude,
                 Longitude = coordinate.Longitude
-            }, deadline: DateTime.UtcNow.AddMilliseconds(100));
+            }, new CallOptions()
+            .WithHeaders(new Metadata
+            {
+                { HeaderKeys.Policies, string.Join(HeaderKeys.Separator, cachePolicyKey, retryPolicyKey) },
+                { HeaderKeys.OperationKey, "Get meteo" }
+            }));
 
-            _console.Out.WriteLine($"Got meteo for (lat: {coordinate.Latitude}; lon: {coordinate.Longitude}):" +
-                                   $" temperature: {response.Temperature}; wind angle: {response.WindAngle};" +
-                                   $" wind speed: {response.WindSpeed}; humidity: {response.Humidity}.");
-            return response;
-        }
-
-        private async Task<RePositionCommand> RegisterAsync(Coordinate coordinate)
+        private async Task<RePositionCommand> RegisterAsync(Coordinate coordinate, RetryPolicyKey retryPolicyKey = RetryPolicyKey.NoRetry)
         {
             var response = await _client.RegisterUnitAsync(
                 new RegisterArtilleryUnitRequest
@@ -227,13 +217,33 @@ namespace ResilienceDemo.Battery
                         Latitude = coordinate.Latitude,
                         Longitude = coordinate.Longitude
                     }
-                }, deadline: DateTime.UtcNow.AddMilliseconds(100));
-            
-            _console.Out.WriteLine($"Unit {_battery.Id} reported for duty. Re-position command: " +
-                                   $"lat: {response.Position.Latitude}; lon: {response.Position.Longitude}; " +
-                                   $"direction: {response.MainFiringDirection}.");
-            
+                }, new CallOptions()
+            .WithHeaders(new Metadata
+            {
+                { HeaderKeys.Policies, retryPolicyKey.ToString() },
+                { HeaderKeys.OperationKey, "Register unit" }
+            }));
+            _mainFiringDirection = response.MainFiringDirection;
             return response;
+        }
+
+        private void GetMeteoResultOutput(Task<Meteo> resultingTask, Coordinate coords)
+        {
+            if (resultingTask.IsFaulted)
+            {
+                _console.Out.WriteLine($"Get meteo failed: {resultingTask.Exception.Message}.");
+                return;
+            }
+
+            if (resultingTask.IsCanceled)
+            {
+                _console.Out.WriteLine($"Get meteo cancelled.");
+                return;
+            }
+
+            _console.Out.WriteLine($"Got meteo for (lat: {coords.Latitude}; lon: {coords.Longitude}):" +
+                               $" temperature: {_meteo.Temperature}; wind angle: {_meteo.WindAngle};" +
+                               $" wind speed: {_meteo.WindSpeed}; humidity: {_meteo.Humidity}.");
         }
     }
 }
