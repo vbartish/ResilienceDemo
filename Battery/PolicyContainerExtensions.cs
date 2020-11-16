@@ -56,7 +56,7 @@ namespace ResilienceDemo.Battery
                             MaxRetries), (exception, timeSpan, retryAttempt, context) =>
                         {
                             console.Out.WriteLine(
-                                $"Operation: {context.OperationKey}; TimeSpan: {timeSpan.ToString()}. Attempt {retryAttempt - 1} failed: {exception.Message}. Retrying.");
+                                $"Operation: {context.OperationKey}; TimeSpan: {timeSpan}. Attempt {retryAttempt - 1} failed: {exception.Message}. Retrying.");
                             return Task.CompletedTask;
                         })
                 },
@@ -78,7 +78,7 @@ namespace ResilienceDemo.Battery
                             (exception, timeSpan, retryAttempt, context) =>
                             {
                                 console.Out.WriteLine(
-                                    $"Operation: {context.OperationKey}; TimeSpan: {timeSpan.ToString()}. Attempt {retryAttempt - 1} failed: {exception.Message}. Retrying.");
+                                    $"Operation: {context.OperationKey}; TimeSpan: {timeSpan}. Attempt {retryAttempt - 1} failed: {exception.Message}. Retrying.");
                                 return Task.CompletedTask;
                             })
                 },
@@ -144,7 +144,7 @@ namespace ResilienceDemo.Battery
                         (context, span, abandonedTask) =>
                         {
                             console.Out.WriteLine($"Operation: {context.OperationKey}, timeout after {span}. ");
-                            abandonedTask.ContinueWith(t =>
+                            abandonedTask?.ContinueWith(t =>
                             {
                                 if (t.IsFaulted)
                                 {

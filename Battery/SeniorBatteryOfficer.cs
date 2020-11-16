@@ -44,10 +44,9 @@ namespace ResilienceDemo.Battery
             var retryPolicy = _policyRegistry.Get<IAsyncPolicy>(retryPolicyKey.ToString());
             var cachePolicy = _policyRegistry.Get<IAsyncPolicy>(cachePolicyKey.ToString());
             var meteoPolicy = Policy.WrapAsync(cachePolicy, retryPolicy);
-            
             await _battery.ToArms(timeoutPolicyKey);
+
             var coords = new Coordinate(latitude ?? Defaults.DefaultLatitude, longitude ?? Defaults.DefaultLongitude);
-            
             var meteoTask = meteoPolicy.ExecuteAndCaptureAsync(_ => GetMeteo(coords), new Context("Get meteo"));
             var registrationTask = retryPolicy.ExecuteAndCaptureAsync(_ => RegisterAsync(coords), new Context("Register unit"));
             await Task.WhenAll(registrationTask, meteoTask);
@@ -59,7 +58,7 @@ namespace ResilienceDemo.Battery
             {
                 _console.Out.WriteLine($"Register unit failed: {registrationPolicyCapture.FinalException.Message}");
             }
-            
+
             if (meteoPolicyCapture.Outcome == OutcomeType.Failure)
             {
                 _console.Out.WriteLine($"Get meteo failed: {meteoPolicyCapture.FinalException.Message}");
@@ -73,11 +72,11 @@ namespace ResilienceDemo.Battery
             [Option(ShortName = "c")] CachePolicyKey cachePolicyKey = CachePolicyKey.NoCache)
         {
             _battery.RePosition(latitude, longitude);
-            
+
             var retryPolicy = _policyRegistry.Get<IAsyncPolicy>(retryPolicyKey.ToString());
             var cachePolicy = _policyRegistry.Get<IAsyncPolicy>(cachePolicyKey.ToString());
             var meteoPolicy = Policy.WrapAsync(cachePolicy, retryPolicy);
-            
+
             var coords = new Coordinate(latitude, longitude);
             var meteoPolicyResult = await meteoPolicy.ExecuteAndCaptureAsync(_ => GetMeteo(coords), new Context("Get meteo"));
             var inPositionPolicyResult = await retryPolicy.ExecuteAndCaptureAsync(_ => ReportPosition(coords), new Context("In position."));
@@ -100,9 +99,7 @@ namespace ResilienceDemo.Battery
             [Option(ShortName = "t")] TimeoutPolicyKey timeoutPolicyKey = TimeoutPolicyKey.NoTimeout,
             [Option(ShortName = "c")] TimeoutPolicyKey correctionTimeoutPolicyKey = TimeoutPolicyKey.NoTimeout)
         {
-
             var (horizontal, vertical) = GetAngles(targetLatitude, targetLongitude, _mainFiringDirection + directionDeviation, _meteo);
-
             await _battery.Aim(horizontal, vertical, timeoutPolicyKey);
             await _battery.Fire(Defaults.DefaultAssaultDensity, timeoutPolicyKey);
 
@@ -110,7 +107,7 @@ namespace ResilienceDemo.Battery
             var correctionFallbackPolicy = Policy
                 .Handle<RpcException>()
                 .Or<TimeoutRejectedException>()
-                .FallbackAsync(CorrectionFallbackAction, OnCorrectionFallback);
+                .FallbackAsync(CorrectionFallbackAction, exception => OnCorrectionFallback(exception));
             var lastResortPolicy = Policy
                 .Handle<RpcException>()
                 .Or<TimeoutRejectedException>()
@@ -122,22 +119,21 @@ namespace ResilienceDemo.Battery
             async Task CorrectionAction(CancellationToken token)
             {
                 var correction = await _client.GetCorrectionAsync(
-                        new Position
-                        {
-                            Latitude = _battery.Latitude,
-                            Longitude = _battery.Longitude
-                        },
-                        cancellationToken: token);
+                    new Position
+                    {
+                        Latitude = _battery.Latitude,
+                        Longitude = _battery.Longitude
+                    }, new CallOptions().WithCancellationToken(token));
 
                 _console.Out.WriteLine(
                     $"Assault command correction received. Target: lat: {correction.Position.Latitude}; lon:{correction.Position.Longitude}" +
                     $" direction: {correction.DirectionDeviation};");
-            }
+            };
 
             async Task CorrectionFallbackAction(CancellationToken token)
             {
                 var coordBoundaries = new CoordinateBoundaries(_battery.Latitude, _battery.Longitude, 2,
-                            DistanceUnit.Kilometers);
+                    DistanceUnit.Kilometers);
                 _battery.RePosition(
                     _faker.Random.Double(coordBoundaries.MinLatitude, coordBoundaries.MaxLatitude),
                     _faker.Random.Double(coordBoundaries.MinLongitude, coordBoundaries.MaxLongitude)
@@ -147,29 +143,26 @@ namespace ResilienceDemo.Battery
                     Latitude = _battery.Latitude,
                     Longitude = _battery.Longitude
                 }, new CallOptions()
-                .WithCancellationToken(token)
-                .WithDeadline(Defaults.DefaultGrpcDeadline));
+                .WithDeadline(Defaults.DefaultGrpcDeadline)
+                .WithCancellationToken(token));
 
                 _console.Out.WriteLine(
                     $"Assault command received. Target: lat: {assaultCommand.Position.Latitude}; lon:{assaultCommand.Position.Longitude}" +
                     $" direction: {assaultCommand.DirectionDeviation};");
-            }
+            };
 
-            Task OnCorrectionFallback(Exception exception)
+            async Task OnCorrectionFallback(Exception exception)
             {
                 _console.Out.WriteLine($"Could not get correction, falling back to new position. Exception: {exception.Message}");
-                return Task.CompletedTask;
+                await Task.CompletedTask;
             }
 
             (double Horizontal, double Vertical) GetAngles(
             in double targetLatitude,
             in double targetLongitude,
             in double directionDeviation,
-            Meteo _meteo)
-            {
-                return (Math.Round(_faker.Random.Double(Defaults.MinHorizontalAngle, Defaults.MaxHorizontalAngle), Defaults.RoundingPrecision), 
-                    Math.Round(_faker.Random.Double(Defaults.MinVerticalAngle, Defaults.MaxVerticalAngle), Defaults.RoundingPrecision));
-            } 
+            Meteo _meteo) => (Math.Round(_faker.Random.Double(Defaults.MinHorizontalAngle, Defaults.MaxHorizontalAngle), Defaults.RoundingPrecision),
+            Math.Round(_faker.Random.Double(Defaults.MinVerticalAngle, Defaults.MaxVerticalAngle), Defaults.RoundingPrecision));
         }
 
         public async Task BattleReport()
@@ -180,11 +173,11 @@ namespace ResilienceDemo.Battery
         private async Task<AssaultCommand> ReportPosition(Coordinate coords)
         {
             var assaultCommand = await _client.InPositionAsync(new Position
-                               {
-                                   Latitude = coords.Latitude,
-                                   Longitude = coords.Longitude
-                               }, deadline: Defaults.DefaultGrpcDeadline);
-            
+            {
+                Latitude = coords.Latitude,
+                Longitude = coords.Longitude
+            }, deadline: Defaults.DefaultGrpcDeadline);
+
             _console.Out.WriteLine($"Assault command received. Target: lat: {assaultCommand.Position.Latitude}; lon:{assaultCommand.Position.Longitude}" +
                                    $" direction: {assaultCommand.DirectionDeviation};");
             return assaultCommand;
@@ -222,7 +215,7 @@ namespace ResilienceDemo.Battery
             _console.Out.WriteLine($"Unit {_battery.Id} reported for duty. Re-position command: " +
                                    $"lat: {response.Position.Latitude}; lon: {response.Position.Longitude}; " +
                                    $"direction: {response.MainFiringDirection}.");
-            
+
             return response;
         }
     }

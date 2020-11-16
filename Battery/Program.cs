@@ -26,14 +26,20 @@ namespace ResilienceDemo.Battery
 
             while (true)
             {
-                Console.WriteLine("Standing by...");
-                var argsLine = Console.ReadLine();
-                if (argsLine != null)
+                try
                 {
-                    await new AppRunner<SeniorBatteryOfficer>()
-                        .UseDefaultMiddleware()
-                        .UseMicrosoftDependencyInjection(serviceProvider)
-                        .RunAsync(argsLine.Split(' '));
+                    Console.WriteLine("Standing by...");
+                    var argsLine = Console.ReadLine();
+                    if (argsLine != null)
+                    {
+                        await new AppRunner<SeniorBatteryOfficer>()
+                            .UseDefaultMiddleware()
+                            .UseMicrosoftDependencyInjection(serviceProvider)
+                            .RunAsync(argsLine.Split(' '));
+                    }
+                }catch (Exception ex)
+                {
+                    Console.WriteLine($"Whoops, someone messed up the demo! Exception: {ex.Message}.");
                 }
             }
         }
