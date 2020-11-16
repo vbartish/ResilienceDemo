@@ -125,7 +125,7 @@ namespace ResilienceDemo.DivisionControl
         {
             try
             {
-                await ReportingBulkhead.ExecuteAsync(async () => await Task.Delay(3000));
+                await ReportingBulkhead.ExecuteAsync(async () => await Task.CompletedTask);
             }
             catch (BulkheadRejectedException)
             {

@@ -107,7 +107,8 @@ namespace ResilienceDemo.Battery
             double targetLongitude,
             double directionDeviation,
             [Option(ShortName = "t")] TimeoutPolicyKey timeoutPolicyKey = TimeoutPolicyKey.NoTimeout,
-            [Option(ShortName = "c")] TimeoutPolicyKey correctionTimeoutPolicyKey = TimeoutPolicyKey.NoTimeout)
+            [Option(ShortName = "c")] TimeoutPolicyKey correctionTimeoutPolicyKey = TimeoutPolicyKey.NoTimeout,
+            [Option(ShortName = "r")] RetryPolicyKey retryPolicyKey = RetryPolicyKey.NoRetry)
         {
             var (horizontal, vertical) = GetAngles(targetLatitude, targetLongitude, _mainFiringDirection + directionDeviation, _meteo);
             await _battery.Aim(horizontal, vertical, timeoutPolicyKey);
@@ -133,7 +134,7 @@ namespace ResilienceDemo.Battery
                     {
                         Latitude = _battery.Latitude,
                         Longitude = _battery.Longitude
-                    }, new CallOptions().WithCancellationToken(token));
+                    }, cancellationToken: token);
 
                 _console.Out.WriteLine(
                     $"Assault command correction received. Target: lat: {correction.Position.Latitude}; lon:{correction.Position.Longitude}" +
@@ -153,6 +154,11 @@ namespace ResilienceDemo.Battery
                     Latitude = _battery.Latitude,
                     Longitude = _battery.Longitude
                 }, new CallOptions()
+                .WithHeaders(new Metadata
+                {
+                    { HeaderKeys.Policies, RetryPolicyKey.RetryOnRpcWithJitter.ToString() },
+                    { HeaderKeys.OperationKey, "In position" }
+                })
                 .WithDeadline(Defaults.DefaultGrpcDeadline)
                 .WithCancellationToken(token));
 

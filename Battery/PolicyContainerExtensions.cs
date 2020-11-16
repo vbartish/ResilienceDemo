@@ -144,7 +144,7 @@ namespace ResilienceDemo.Battery
                         (context, span, abandonedTask) =>
                         {
                             console.Out.WriteLine($"Operation: {context.OperationKey}, timeout after {span}. ");
-                            abandonedTask.ContinueWith(t =>
+                            abandonedTask?.ContinueWith(t =>
                             {
                                 if (t.IsFaulted)
                                 {

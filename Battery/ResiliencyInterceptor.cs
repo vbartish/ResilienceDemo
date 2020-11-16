@@ -22,7 +22,7 @@ namespace ResilienceDemo.Battery
 
         public override AsyncUnaryCall<TResponse> AsyncUnaryCall<TRequest, TResponse>(TRequest request, ClientInterceptorContext<TRequest, TResponse> context, AsyncUnaryCallContinuation<TRequest, TResponse> continuation)
         {
-            var policies = context.Options.Headers.Get(HeaderKeys.Policies)?.Value?.Split(HeaderKeys.Separator);
+            var policies = context.Options.Headers?.Get(HeaderKeys.Policies)?.Value?.Split(HeaderKeys.Separator);
             IAsyncPolicy executionPolicy = Policy.NoOpAsync();
 
             if (policies != null)
@@ -57,10 +57,13 @@ namespace ResilienceDemo.Battery
                         }
 
                         var newMetadata = new Metadata();
-                        context.Options.Headers
-                        .Where(entry => entry.Key != HeaderKeys.Policies && entry.Key != HeaderKeys.OperationKey)
-                        .ToList()
-                        .ForEach(entry => newMetadata.Add(entry));
+                        if (context.Options.Headers != null)
+                        {
+                            context.Options.Headers
+                            .Where(entry => entry.Key != HeaderKeys.Policies && entry.Key != HeaderKeys.OperationKey)
+                            .ToList()
+                            .ForEach(entry => newMetadata.Add(entry));
+                        }
 
 
                         var newContext = new ClientInterceptorContext<TRequest, TResponse>(
@@ -87,7 +90,7 @@ namespace ResilienceDemo.Battery
                         trailers = asyncCall.GetTrailers();
 
                         return result;
-                    }, new Context(context.Options.Headers.GetValue(HeaderKeys.OperationKey) ?? string.Empty));
+                    }, new Context(context.Options.Headers?.GetValue(HeaderKeys.OperationKey) ?? string.Empty));
 
                     if (policyResult.Outcome != OutcomeType.Successful)
                     {

@@ -170,7 +170,7 @@ namespace ResilienceDemo.Battery
                         (exception, retryAttempt, timeSpan, context) =>
                         {
                             _console.Out.WriteLine(
-                                $"Operation: {context.OperationKey}; TimeSpan: {timeSpan.ToString()}. Attempt {retryAttempt - 1} failed: {exception.Message}. Retrying.");
+                                $"Operation: {context.OperationKey}; TimeSpan: {timeSpan}. Attempt {retryAttempt - 1} failed: {exception.Message}. Retrying.");
                             return Task.CompletedTask;
                         });
 

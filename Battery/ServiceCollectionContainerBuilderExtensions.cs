@@ -30,7 +30,7 @@ namespace ResilienceDemo.Battery
                     var howitzer = new Howitzer(howitzerId, console, policies, divisionControl);
                     howitzers.Add(howitzer);
                 }
-                return new Battery(console, howitzers, policies);
+                return new Battery(console, howitzers, policies) as IBattery;
             });
 
             serviceCollection.AddSingleton<SeniorBatteryOfficer>();

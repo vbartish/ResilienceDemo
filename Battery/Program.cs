@@ -1,14 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using CommandDotNet;
 using CommandDotNet.IoC.MicrosoftDependencyInjection;
 using CommandDotNet.Rendering;
-using GrpcDivisionControlUnit;
 using Microsoft.Extensions.DependencyInjection;
 using Polly.Caching;
 using Polly.Caching.Memory;
-using Polly.Registry;
 
 namespace ResilienceDemo.Battery
 {
@@ -29,14 +26,20 @@ namespace ResilienceDemo.Battery
 
             while (true)
             {
-                Console.WriteLine("Standing by...");
-                var argsLine = Console.ReadLine();
-                if (argsLine != null)
+                try
                 {
-                    await new AppRunner<SeniorBatteryOfficer>()
-                        .UseDefaultMiddleware()
-                        .UseMicrosoftDependencyInjection(serviceProvider)
-                        .RunAsync(argsLine.Split(' '));
+                    Console.WriteLine("Standing by...");
+                    var argsLine = Console.ReadLine();
+                    if (argsLine != null)
+                    {
+                        await new AppRunner<SeniorBatteryOfficer>()
+                            .UseDefaultMiddleware()
+                            .UseMicrosoftDependencyInjection(serviceProvider)
+                            .RunAsync(argsLine.Split(' '));
+                    }
+                }catch(Exception ex)
+                {
+                    Console.WriteLine($"Whoops. Message: {ex.Message}");
                 }
             }
         }

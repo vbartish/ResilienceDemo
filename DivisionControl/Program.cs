@@ -16,10 +16,6 @@ namespace ResilienceDemo.DivisionControl
                 {
                     webBuilder.UseStartup<Startup>();
                 })
-                .ConfigureServices(serviceCollection =>
-                {
-                    serviceCollection.AddSingleton(new ConsoleLifetimeOptions { SuppressStatusMessages = false });
-                })
                 .Build()
                 .RunAsync();
         }
